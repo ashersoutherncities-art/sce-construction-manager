@@ -1,0 +1,36 @@
+[
+  {
+    "id": "VND-1743014400000",
+    "name": "Clint White",
+    "trade": "Permitting / Government Contact",
+    "location": "Shelby, NC",
+    "phone": "",
+    "email": "clint.white@cityofshelby.com",
+    "reliabilityScore": 10,
+    "pricingTier": "n/a",
+    "performanceNotes": "Head of Permitting for City of Shelby. Government contact for permitting and regulatory matters. Not a contractor - use for permit applications, inspections, and regulatory questions.",
+    "lastUpdated": "2026-03-23T17:09:00.000Z",
+    "totalJobs": 0,
+    "successfulJobs": 0,
+    "category": "Government / Permitting",
+    "organization": "City of Shelby",
+    "role": "Head of Permitting"
+  },
+  {
+    "id": "VND-1743286800000",
+    "name": "Enrique",
+    "trade": "HVAC",
+    "location": "",
+    "phone": "980-438702",
+    "email": "",
+    "reliabilityScore": 5,
+    "pricingTier": "unknown",
+    "performanceNotes": "Potential HVAC service vendor for construction company. Initial contact - needs vetting.",
+    "lastUpdated": "2026-03-23T19:26:00.000Z",
+    "totalJobs": 0,
+    "successfulJobs": 0,
+    "category": "HVAC",
+    "organization": "",
+    "role": "HVAC Contractor"
+  }
+]
