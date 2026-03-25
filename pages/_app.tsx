@@ -1,10 +1,11 @@
 import '@/styles/globals.css'
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
+import { SessionProvider } from 'next-auth/react'
 
-export default function App({ Component, pageProps }: AppProps) {
+export default function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   return (
-    <>
+    <SessionProvider session={session}>
       <Head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
@@ -14,6 +15,6 @@ export default function App({ Component, pageProps }: AppProps) {
         />
       </Head>
       <Component {...pageProps} />
-    </>
+    </SessionProvider>
   )
 }

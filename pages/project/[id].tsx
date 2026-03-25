@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
+import { useRequireAuth } from '@/lib/requireAuth';
 import type { ScopeOfWork, CostEstimate } from '@/lib/openai';
 import { 
   downloadScopeOfWorkPDF, 
@@ -30,6 +31,7 @@ interface Project {
 }
 
 export default function ProjectDetailPage() {
+  const { session, isLoading: authLoading } = useRequireAuth();
   const router = useRouter();
   const { id } = router.query;
 

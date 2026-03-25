@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import Link from 'next/link';
+import { useRequireAuth } from '@/lib/requireAuth';
 
 interface Project {
   id: string;
@@ -12,6 +13,7 @@ interface Project {
 }
 
 export default function Dashboard() {
+  const { session, isLoading: authLoading } = useRequireAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
@@ -53,6 +55,14 @@ export default function Dashboard() {
     quoted: projects.filter((p) => p.status === 'quoted').length,
     completed: projects.filter((p) => p.status === 'completed').length,
   };
+
+  if (authLoading || !session) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+      </div>
+    );
+  }
 
   return (
     <Layout title="Project Dashboard">

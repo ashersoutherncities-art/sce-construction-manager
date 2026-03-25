@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { ReactNode } from 'react';
+import { useSession, signOut } from 'next-auth/react';
 
 interface LayoutProps {
   children: ReactNode;
@@ -9,6 +10,7 @@ interface LayoutProps {
 
 export default function Layout({ children, title }: LayoutProps) {
   const router = useRouter();
+  const { data: session } = useSession();
 
   const navLinks = [
     { href: '/', label: 'Home' },
@@ -30,19 +32,54 @@ export default function Layout({ children, title }: LayoutProps) {
               </div>
             </Link>
 
-            <nav className="hidden md:flex gap-6">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`hover:text-sce-orange transition-colors ${
-                    router.pathname === link.href ? 'text-sce-orange font-semibold' : ''
-                  }`}
-                >
-                  {link.label}
+            <div className="flex items-center gap-6">
+              <nav className="hidden md:flex gap-6">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`hover:text-sce-orange transition-colors ${
+                      router.pathname === link.href ? 'text-sce-orange font-semibold' : ''
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </nav>
+
+              {/* User Menu */}
+              {session?.user ? (
+                <div className="hidden md:flex items-center gap-3">
+                  <Link href="/profile" className="flex items-center gap-2 hover:text-sce-orange transition-colors">
+                    {session.user.image ? (
+                      <img
+                        src={session.user.image}
+                        alt={session.user.name || ''}
+                        className="w-8 h-8 rounded-full border-2 border-white/30"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-sm font-bold">
+                        {session.user.name?.charAt(0) || '?'}
+                      </div>
+                    )}
+                    <span className="text-sm">{session.user.name?.split(' ')[0]}</span>
+                  </Link>
+                  <button
+                    onClick={() => signOut({ callbackUrl: '/login' })}
+                    className="text-sm text-gray-300 hover:text-white transition-colors"
+                    title="Sign out"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                  </button>
+                </div>
+              ) : (
+                <Link href="/login" className="hidden md:block text-sm hover:text-sce-orange transition-colors">
+                  Sign In
                 </Link>
-              ))}
-            </nav>
+              )}
+            </div>
 
             {/* Mobile menu button */}
             <button className="md:hidden">

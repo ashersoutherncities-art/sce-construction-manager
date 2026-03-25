@@ -2,8 +2,10 @@ import { useState, FormEvent } from 'react';
 import Layout from '@/components/Layout';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 import { useRouter } from 'next/router';
+import { useRequireAuth } from '@/lib/requireAuth';
 
 export default function IntakePage() {
+  const { session, isLoading: authLoading } = useRequireAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [photos, setPhotos] = useState<File[]>([]);
