@@ -46,3 +46,6 @@ logs
 # OS
 Thumbs.db
 tests/
+credentials/
+.env.local
+.env
