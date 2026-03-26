@@ -1,8 +1,28 @@
 import Head from 'next/head';
 import Link from 'next/link';
 import { useState } from 'react';
+import { useSession, signIn } from 'next-auth/react';
+import { useRouter } from 'next/router';
+import { useEffect } from 'react';
 
 export default function Home() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/login');
+    }
+  }, [status, router]);
+
+  if (status === 'loading') {
+    return <div className="p-8">Loading...</div>;
+  }
+
+  if (!session) {
+    return null;
+  }
+
   return (
     <>
       <Head>
