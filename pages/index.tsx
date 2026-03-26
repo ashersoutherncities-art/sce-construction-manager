@@ -1,10 +1,8 @@
 import Head from 'next/head';
 import Link from 'next/link';
-import { useSession, signIn } from 'next-auth/react';
+import { signIn } from 'next-auth/react';
 
 export default function Home() {
-  const { data: session, status } = useSession();
-
   return (
     <>
       <Head>
@@ -20,11 +18,6 @@ export default function Home() {
               <h1 className="text-3xl font-serif font-bold">Southern Cities Enterprises</h1>
               <p className="text-sce-orange mt-1">Construction Management System</p>
             </div>
-            {status === 'authenticated' && (
-              <div className="text-right">
-                <p className="text-sm">Welcome, {session?.user?.name}</p>
-              </div>
-            )}
           </div>
         </header>
 
@@ -38,38 +31,18 @@ export default function Home() {
               From intake to completion, manage everything in one place
             </p>
             <div className="flex justify-center gap-4 flex-wrap">
-              {status === 'loading' && (
-                <p className="text-gray-400">Loading...</p>
-              )}
-              {status === 'authenticated' ? (
-                <>
-                  <Link
-                    href="/intake"
-                    className="bg-sce-orange text-white px-8 py-4 rounded-full font-semibold hover:bg-white hover:text-sce-navy transition-all"
-                  >
-                    New Project Intake
-                  </Link>
-                  <Link
-                    href="/plans"
-                    className="bg-sce-navy text-white px-8 py-4 rounded-full font-semibold hover:bg-sce-orange transition-all"
-                  >
-                    Analyze Plans/Blueprints
-                  </Link>
-                  <Link
-                    href="/dashboard"
-                    className="border-2 border-sce-orange text-white px-8 py-4 rounded-full font-semibold hover:bg-sce-orange transition-all"
-                  >
-                    View Dashboard
-                  </Link>
-                </>
-              ) : (
-                <button
-                  onClick={() => signIn('google')}
-                  className="bg-sce-orange text-white px-8 py-4 rounded-full font-semibold hover:bg-white hover:text-sce-navy transition-all text-lg"
-                >
-                  Sign In with Google
-                </button>
-              )}
+              <button
+                onClick={() => signIn('google')}
+                className="bg-sce-orange text-white px-8 py-4 rounded-full font-semibold hover:bg-white hover:text-sce-navy transition-all text-lg"
+              >
+                Sign In with Google
+              </button>
+              <Link
+                href="/login"
+                className="border-2 border-sce-orange text-white px-8 py-4 rounded-full font-semibold hover:bg-sce-orange transition-all"
+              >
+                Or use Login Page
+              </Link>
             </div>
           </div>
         </section>
