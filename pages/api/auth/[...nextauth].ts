@@ -12,6 +12,15 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      authorization: {
+        params: {
+          prompt: 'consent',
+          access_type: 'offline',
+          response_type: 'code',
+        },
+      },
+      // Use 'state' instead of PKCE to avoid cookie issues on Vercel
+      checks: ['state'],
     })
   );
 }
@@ -40,35 +49,51 @@ export const authOptions: NextAuthOptions = {
   providers,
   pages: {
     signIn: '/login',
+    error: '/login', // Redirect OAuth errors to login page with error param
   },
+  debug: process.env.NODE_ENV === 'development' || process.env.NEXTAUTH_DEBUG === 'true',
   callbacks: {
-    async signIn({ user, account }) {
-      // For Google OAuth: optionally restrict to known emails
-      // Currently allows any Google account to sign in
+    async signIn({ user, account, profile }) {
+      // Log for debugging
+      console.log('[NextAuth] signIn callback:', {
+        provider: account?.provider,
+        email: user?.email,
+        hasProfile: !!profile,
+      });
+      // Allow any Google account to sign in
       return true;
     },
     async redirect({ url, baseUrl }) {
       if (url.startsWith('/')) return `${baseUrl}${url}`;
-      if (new URL(url).origin === baseUrl) return url;
+      try {
+        if (new URL(url).origin === baseUrl) return url;
+      } catch {
+        // Invalid URL, fall through to default
+      }
       return baseUrl + '/dashboard';
     },
     async session({ session, token }) {
       if (session.user) {
         (session.user as any).id = token.sub;
+        (session.user as any).provider = token.provider;
       }
       return session;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id;
+      }
+      if (account) {
+        token.provider = account.provider;
       }
       return token;
     },
   },
   session: {
     strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
-  secret: process.env.NEXTAUTH_SECRET || 'sce-construction-manager-default-secret-change-me',
+  secret: process.env.NEXTAUTH_SECRET,
 };
 
 export default NextAuth(authOptions);
