@@ -1,6 +1,6 @@
 import NextAuth, { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
-import { query } from '@/lib/postgres';
+import { sql } from '@vercel/postgres';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -16,15 +16,14 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account, profile }) {
       try {
         // Upsert user in PostgreSQL
-        await query(
-          `INSERT INTO users (email, name, picture, googleId, lastLogin)
-           VALUES ($1, $2, $3, $4, NOW())
-           ON CONFLICT(email) DO UPDATE SET
-             name = EXCLUDED.name,
-             picture = EXCLUDED.picture,
-             lastLogin = NOW()`,
-          [user.email, user.name, user.image, (profile as any)?.sub]
-        );
+        await sql`
+          INSERT INTO users (email, name, picture, googleId, lastLogin)
+          VALUES (${user.email}, ${user.name}, ${user.image}, ${(profile as any)?.sub}, NOW())
+          ON CONFLICT(email) DO UPDATE SET
+            name = EXCLUDED.name,
+            picture = EXCLUDED.picture,
+            lastLogin = NOW()
+        `;
       } catch (error) {
         console.error('Error storing user:', error);
         // Don't block sign-in if DB write fails

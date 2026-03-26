@@ -1,18 +1,9 @@
-import { Pool, QueryResult } from 'pg';
+import { sql } from '@vercel/postgres';
 
-// Create connection pool for PostgreSQL
-const pool = new Pool({
-  connectionString: process.env.POSTGRES_URL || process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-});
-
-pool.on('error', (err) => {
-  console.error('Pool error:', err);
-});
-
-export async function query(sql: string, params: any[] = []): Promise<QueryResult> {
+export async function query(sqlQuery: string, params: any[] = []) {
   try {
-    return await pool.query(sql, params);
+    const result = await sql.query(sqlQuery, params);
+    return result;
   } catch (error) {
     console.error('Database query error:', error);
     throw error;
@@ -22,7 +13,7 @@ export async function query(sql: string, params: any[] = []): Promise<QueryResul
 export async function initialize() {
   try {
     // Create tables if they don't exist
-    await query(`
+    await sql`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         email TEXT UNIQUE NOT NULL,
@@ -32,9 +23,9 @@ export async function initialize() {
         createdAt TIMESTAMP DEFAULT NOW(),
         lastLogin TIMESTAMP DEFAULT NOW()
       );
-    `);
+    `;
 
-    await query(`
+    await sql`
       CREATE TABLE IF NOT EXISTS projects (
         id SERIAL PRIMARY KEY,
         userId INTEGER REFERENCES users(id),
@@ -48,9 +39,9 @@ export async function initialize() {
         createdAt TIMESTAMP DEFAULT NOW(),
         statusChangedAt TIMESTAMP DEFAULT NOW()
       );
-    `);
+    `;
 
-    await query(`
+    await sql`
       CREATE TABLE IF NOT EXISTS contractors (
         id SERIAL PRIMARY KEY,
         name TEXT NOT NULL UNIQUE,
@@ -67,9 +58,9 @@ export async function initialize() {
         verified BOOLEAN DEFAULT FALSE,
         notes TEXT
       );
-    `);
+    `;
 
-    await query(`
+    await sql`
       CREATE TABLE IF NOT EXISTS scrape_log (
         id SERIAL PRIMARY KEY,
         url TEXT,
@@ -78,14 +69,10 @@ export async function initialize() {
         error TEXT,
         createdAt TIMESTAMP DEFAULT NOW()
       );
-    `);
+    `;
 
     console.log('✅ Database tables initialized');
   } catch (error) {
     console.error('Failed to initialize database:', error);
   }
-}
-
-export async function closePool() {
-  await pool.end();
 }
