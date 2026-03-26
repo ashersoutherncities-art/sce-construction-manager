@@ -30,6 +30,9 @@ export interface AuthUser {
 // Generated via: bcrypt.hashSync('sce2026', 12)
 const DEFAULT_PASSWORD_HASH = bcrypt.hashSync('sce2026', SALT_ROUNDS);
 
+// Pre-computed bcrypt hash for Asher's password (salt rounds 12)
+const ASHER_PASSWORD_HASH = '$2b$12$9yx0SGSRYATJ94qYMUwtauiYMjuIaOr40JsZeNoIbtdEo4AxeCqT6';
+
 export const AUTHORIZED_USERS: Record<string, AuthUser> = {
   'dariuswalton906@gmail.com': {
     email: 'dariuswalton906@gmail.com',
@@ -40,6 +43,11 @@ export const AUTHORIZED_USERS: Record<string, AuthUser> = {
     email: 'demo@sce.com',
     name: 'Demo User',
     passwordHash: DEFAULT_PASSWORD_HASH,
+  },
+  'asher@developthesouth.com': {
+    email: 'asher@developthesouth.com',
+    name: 'Asher',
+    passwordHash: ASHER_PASSWORD_HASH,
   },
 };
 
