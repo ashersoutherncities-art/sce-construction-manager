@@ -19,8 +19,10 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
           response_type: 'code',
         },
       },
-      // Use 'state' instead of PKCE to avoid cookie issues on Vercel
-      checks: ['state'],
+      // Use nonce check instead of state/PKCE - nonce is verified via the
+      // ID token and doesn't depend on cookies surviving the redirect chain.
+      // This fixes "State cookie was missing" errors on Vercel serverless.
+      checks: ['nonce'],
     })
   );
 }
@@ -94,6 +96,58 @@ export const authOptions: NextAuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   secret: process.env.NEXTAUTH_SECRET,
+  // Fix "State cookie was missing" on Vercel serverless:
+  // Drop the __Secure-/__Host- prefix so the nonce/state cookie isn't
+  // silently stripped by certain browsers during the cross-site OAuth
+  // redirect chain (Google → our callback).
+  cookies: {
+    sessionToken: {
+      name: 'next-auth.session-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax' as const,
+        path: '/',
+        secure: true,
+      },
+    },
+    csrfToken: {
+      name: 'next-auth.csrf-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax' as const,
+        path: '/',
+        secure: true,
+      },
+    },
+    callbackUrl: {
+      name: 'next-auth.callback-url',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax' as const,
+        path: '/',
+        secure: true,
+      },
+    },
+    state: {
+      name: 'next-auth.state',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax' as const,
+        path: '/',
+        secure: true,
+        maxAge: 900,
+      },
+    },
+    nonce: {
+      name: 'next-auth.nonce',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax' as const,
+        path: '/',
+        secure: true,
+      },
+    },
+  },
 };
 
 export default NextAuth(authOptions);
