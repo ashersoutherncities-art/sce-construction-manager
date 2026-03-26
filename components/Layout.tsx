@@ -13,7 +13,7 @@ export default function Layout({ children, title }: LayoutProps) {
   const { data: session } = useSession();
 
   const navLinks = [
-    { href: '/', label: 'Dashboard' },
+    { href: '/dashboard', label: 'Dashboard' },
     { href: '/intake', label: 'New Project' },
     { href: '/analyze', label: 'Photo Analysis' },
     { href: '/vendors', label: 'Vendors' },
@@ -26,7 +26,7 @@ export default function Layout({ children, title }: LayoutProps) {
       <header className="bg-sce-navy text-white py-4 px-6 shadow-lg sticky top-0 z-50">
         <div className="container mx-auto">
           <div className="flex justify-between items-center">
-            <Link href="/" className="flex items-center gap-3">
+            <Link href="/dashboard" className="flex items-center gap-3">
               <div className="text-2xl font-serif font-bold">
                 Southern Cities Enterprises
               </div>
@@ -57,7 +57,7 @@ export default function Layout({ children, title }: LayoutProps) {
                     <span className="text-sm">{session.user.name?.split(' ')[0]}</span>
                   </Link>
                   <button
-                    onClick={() => signOut({ callbackUrl: '/login' })}
+                    onClick={() => signOut({ callbackUrl: '/' })}
                     className="text-sm text-gray-300 hover:text-white transition-colors"
                     title="Sign out"
                   >

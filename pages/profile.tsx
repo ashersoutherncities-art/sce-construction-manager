@@ -31,14 +31,14 @@ export default function ProfilePage() {
         {/* Header */}
         <header className="bg-white border-b border-gray-200">
           <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
+            <Link href="/dashboard" className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
               Back to Dashboard
             </Link>
             <button
-              onClick={() => signOut({ callbackUrl: '/login' })}
+              onClick={() => signOut({ callbackUrl: '/' })}
               className="px-4 py-2 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
             >
               Sign Out
@@ -94,7 +94,7 @@ export default function ProfilePage() {
             {/* Actions */}
             <div className="px-8 py-6 bg-gray-50 border-t border-gray-200">
               <button
-                onClick={() => signOut({ callbackUrl: '/login' })}
+                onClick={() => signOut({ callbackUrl: '/' })}
                 className="w-full px-4 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-medium"
               >
                 Sign Out
