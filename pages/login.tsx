@@ -8,6 +8,7 @@ export default function LoginPage() {
   const router = useRouter();
   const callbackUrl = (router.query.callbackUrl as string) || '/dashboard';
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [hasGoogle, setHasGoogle] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -50,12 +51,13 @@ export default function LoginPage() {
 
   const handleCredentialsLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    if (!email || !password) return;
     setError('');
     setLoading(true);
     try {
       const result = await signIn('credentials', {
         email,
+        password,
         redirect: false,
         callbackUrl,
       });
@@ -142,9 +144,23 @@ export default function LoginPage() {
                   required
                 />
               </div>
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                  Password
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
+                  required
+                />
+              </div>
               <button
                 type="submit"
-                disabled={loading || !email}
+                disabled={loading || !email || !password}
                 className="w-full px-6 py-3.5 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Signing in...' : 'Sign In'}

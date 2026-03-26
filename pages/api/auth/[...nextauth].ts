@@ -1,13 +1,13 @@
 import NextAuth, { NextAuthOptions } from 'next-auth';
+import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import crypto from 'crypto';
 
 // Build providers list based on available env vars
 const providers: any[] = [];
 
 // Only add Google provider if credentials are configured
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
-  // Dynamic import to avoid issues when not configured
-  const GoogleProvider = require('next-auth/providers/google').default;
   providers.push(
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
@@ -16,22 +16,57 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   );
 }
 
-// Always provide a credentials provider as fallback for demo/development
+// Authorized users - email → hashed password
+// Default password: "sce2026" — hash: sha256
+const AUTHORIZED_USERS: Record<string, { passwordHash: string; name: string }> = {
+  'dariuswalton906@gmail.com': {
+    passwordHash: crypto.createHash('sha256').update(process.env.SCE_DEFAULT_PASSWORD || 'sce2026').digest('hex'),
+    name: 'Darius Walton',
+  },
+  'demo@sce.com': {
+    passwordHash: crypto.createHash('sha256').update(process.env.SCE_DEFAULT_PASSWORD || 'sce2026').digest('hex'),
+    name: 'Demo User',
+  },
+};
+
+// Credentials provider with email + password
 providers.push(
   CredentialsProvider({
-    name: 'Demo Access',
+    name: 'Email & Password',
     credentials: {
-      email: { label: 'Email', type: 'email', placeholder: 'demo@sce.com' },
+      email: { label: 'Email', type: 'email', placeholder: 'your@email.com' },
+      password: { label: 'Password', type: 'password' },
     },
     async authorize(credentials) {
-      // Allow demo access - in production, add proper validation
-      if (credentials?.email) {
+      if (!credentials?.email || !credentials?.password) {
+        return null;
+      }
+
+      const email = credentials.email.toLowerCase().trim();
+      const user = AUTHORIZED_USERS[email];
+
+      if (user) {
+        // Check password
+        const inputHash = crypto.createHash('sha256').update(credentials.password).digest('hex');
+        if (inputHash === user.passwordHash) {
+          return {
+            id: email,
+            name: user.name,
+            email: email,
+          };
+        }
+      }
+
+      // Allow any email with the correct master password (for team members)
+      const masterPassword = process.env.SCE_MASTER_PASSWORD || 'sce2026';
+      if (credentials.password === masterPassword) {
         return {
-          id: '1',
-          name: credentials.email.split('@')[0],
-          email: credentials.email,
+          id: email,
+          name: email.split('@')[0],
+          email: email,
         };
       }
+
       return null;
     },
   })
