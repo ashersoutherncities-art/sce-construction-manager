@@ -18,6 +18,7 @@ export default function Layout({ children, title }: LayoutProps) {
     { href: '/dashboard', label: 'Dashboard' },
     { href: '/analyze', label: 'Photo Analysis' },
     { href: '/vendors', label: 'Vendors' },
+    { href: '/admin/scraper-dashboard', label: 'FB Scraper' },
   ];
 
   return (
