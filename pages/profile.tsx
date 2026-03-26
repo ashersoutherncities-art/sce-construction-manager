@@ -51,19 +51,9 @@ export default function ProfilePage() {
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
             {/* Profile Header */}
             <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-10 text-center">
-              {session.user?.image ? (
-                <img
-                  src={session.user.image}
-                  alt={session.user.name || 'Profile'}
-                  className="w-24 h-24 rounded-full border-4 border-white shadow-lg mx-auto"
-                />
-              ) : (
-                <div className="w-24 h-24 rounded-full bg-blue-400 border-4 border-white shadow-lg mx-auto flex items-center justify-center">
-                  <span className="text-3xl font-bold text-white">
-                    {session.user?.name?.charAt(0) || '?'}
-                  </span>
-                </div>
-              )}
+              <div className="w-24 h-24 rounded-full bg-white border-4 border-white shadow-lg mx-auto flex items-center justify-center">
+                <span className="text-5xl font-bold text-blue-600">A</span>
+              </div>
               <h1 className="text-2xl font-bold text-white mt-4">
                 {session.user?.name || 'User'}
               </h1>

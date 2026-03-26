@@ -51,17 +51,9 @@ export default function Layout({ children, title }: LayoutProps) {
               {session?.user ? (
                 <div className="hidden md:flex items-center gap-3">
                   <Link href="/profile" className="flex items-center gap-2 hover:text-sce-orange transition-colors">
-                    {session.user.image ? (
-                      <img
-                        src={session.user.image}
-                        alt={session.user.name || ''}
-                        className="w-8 h-8 rounded-full border-2 border-white/30"
-                      />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-sm font-bold">
-                        {session.user.name?.charAt(0) || '?'}
-                      </div>
-                    )}
+                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-xs font-bold text-blue-600">
+                      A
+                    </div>
                     <span className="text-sm">{session.user.name?.split(' ')[0]}</span>
                   </Link>
                   <button
