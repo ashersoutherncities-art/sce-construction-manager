@@ -52,3 +52,5 @@ credentials/
 .env.production
 .env.prod
 .env.vercel
+.env.prodcheck
+.env*.local

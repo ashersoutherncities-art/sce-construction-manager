@@ -1,131 +1,161 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
+
+interface AddressComponents {
+  streetAddress: string;
+  city: string;
+  state: string;
+  zip: string;
+  fullAddress: string;
+}
 
 interface AddressAutocompleteProps {
   value: string;
   onChange: (value: string) => void;
+  onAddressSelect?: (components: AddressComponents) => void;
   name: string;
   required?: boolean;
   className?: string;
+  placeholder?: string;
+}
+
+function parseAddressComponents(place: google.maps.places.PlaceResult): AddressComponents {
+  const components: AddressComponents = {
+    streetAddress: '',
+    city: '',
+    state: '',
+    zip: '',
+    fullAddress: place.formatted_address || '',
+  };
+
+  if (!place.address_components) return components;
+
+  let streetNumber = '';
+  let route = '';
+
+  for (const component of place.address_components) {
+    const types = component.types;
+    if (types.includes('street_number')) {
+      streetNumber = component.long_name;
+    } else if (types.includes('route')) {
+      route = component.long_name;
+    } else if (types.includes('locality') || types.includes('sublocality_level_1')) {
+      components.city = component.long_name;
+    } else if (types.includes('administrative_area_level_1')) {
+      components.state = component.short_name;
+    } else if (types.includes('postal_code')) {
+      components.zip = component.long_name;
+    }
+  }
+
+  components.streetAddress = streetNumber ? `${streetNumber} ${route}` : route;
+  return components;
 }
 
 export default function AddressAutocomplete({
   value,
   onChange,
+  onAddressSelect,
   name,
   required = false,
   className = '',
+  placeholder,
 }: AddressAutocompleteProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
-  
-  // BUG FIX: Track if we're in the middle of autocomplete interaction
-  // This prevents React from fighting with Google's DOM manipulation
   const isAutocompleteActive = useRef(false);
 
   useEffect(() => {
-    // Check if Google Maps API key is configured
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
     if (!apiKey) {
       console.warn('⚠️ Google Maps API key not configured. Address autocomplete disabled.');
-      console.warn('📝 See GOOGLE_MAPS_SETUP.md for setup instructions');
       setIsLoaded(false);
       return;
     }
 
-    // Check if script is already loaded
     if (window.google && window.google.maps && window.google.maps.places) {
       setIsLoaded(true);
       return;
     }
 
-    // Load Google Maps Places API script
     setIsLoading(true);
     const script = document.createElement('script');
     script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initGoogleMaps`;
     script.async = true;
     script.defer = true;
-    
-    // Create global callback
+
     (window as any).initGoogleMaps = () => {
       setIsLoaded(true);
       setIsLoading(false);
-      console.log('✅ Google Maps API loaded successfully');
     };
 
     script.onerror = () => {
-      setError('Failed to load Google Maps API. Check your API key and network connection.');
+      setError('Failed to load Google Maps API. Check your API key.');
       setIsLoading(false);
-      console.error('❌ Failed to load Google Maps API');
     };
-    
+
     document.head.appendChild(script);
 
     return () => {
-      // Cleanup
       delete (window as any).initGoogleMaps;
     };
   }, []);
+
+  const stableOnAddressSelect = useRef(onAddressSelect);
+  stableOnAddressSelect.current = onAddressSelect;
+  const stableOnChange = useRef(onChange);
+  stableOnChange.current = onChange;
 
   useEffect(() => {
     if (!isLoaded || !inputRef.current) return;
 
     try {
       const inputElement = inputRef.current;
-      
-      // Initialize autocomplete
+
       const autocompleteInstance = new google.maps.places.Autocomplete(inputElement, {
         types: ['address'],
-        componentRestrictions: { country: 'us' }, // Restrict to US addresses
+        componentRestrictions: { country: 'us' },
         fields: ['formatted_address', 'address_components', 'geometry'],
       });
-      
-      // Listen for place selection
+
       autocompleteInstance.addListener('place_changed', () => {
         const place = autocompleteInstance.getPlace();
         if (place.formatted_address) {
           isAutocompleteActive.current = false;
-          onChange(place.formatted_address);
-          console.log('📍 Address selected:', place.formatted_address);
+          stableOnChange.current(place.formatted_address);
+
+          // Parse and emit address components
+          if (stableOnAddressSelect.current) {
+            const parsed = parseAddressComponents(place);
+            stableOnAddressSelect.current(parsed);
+          }
         }
       });
 
-      // BUG FIX: Detect when user is interacting with autocomplete dropdown
-      // This prevents React from overwriting Google's DOM changes
-      const handleFocus = () => {
-        isAutocompleteActive.current = true;
-      };
-      
+      const handleFocus = () => { isAutocompleteActive.current = true; };
       const handleBlur = () => {
-        // Small delay to allow place_changed to fire first
-        setTimeout(() => {
-          isAutocompleteActive.current = false;
-        }, 200);
+        setTimeout(() => { isAutocompleteActive.current = false; }, 200);
       };
 
       inputElement.addEventListener('focus', handleFocus);
       inputElement.addEventListener('blur', handleBlur);
-
       autocompleteRef.current = autocompleteInstance;
-      console.log('🗺️ Address autocomplete initialized');
-      
+
       return () => {
-        // Cleanup
         inputElement.removeEventListener('focus', handleFocus);
         inputElement.removeEventListener('blur', handleBlur);
         if (autocompleteRef.current) {
           google.maps.event.clearInstanceListeners(autocompleteRef.current);
         }
       };
-    } catch (error) {
-      console.error('Error initializing autocomplete:', error);
+    } catch (err) {
+      console.error('Error initializing autocomplete:', err);
       setError('Failed to initialize address autocomplete');
     }
-  }, [isLoaded, onChange]);
+  }, [isLoaded]);
 
-  // Sync the input value when value prop changes externally
   useEffect(() => {
     if (inputRef.current && !isAutocompleteActive.current) {
       inputRef.current.value = value;
@@ -133,12 +163,16 @@ export default function AddressAutocomplete({
   }, [value]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // BUG FIX: Always notify parent of value changes
-    // but let the DOM value be the source of truth during autocomplete
     onChange(e.target.value);
   };
 
   const hasApiKey = !!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+
+  const defaultPlaceholder = isLoaded
+    ? 'Start typing an address...'
+    : hasApiKey && isLoading
+    ? 'Loading address suggestions...'
+    : 'Enter property address';
 
   return (
     <div className="relative">
@@ -150,28 +184,20 @@ export default function AddressAutocomplete({
         onChange={handleInputChange}
         required={required}
         className={className}
-        placeholder={
-          isLoaded
-            ? 'Start typing an address... (e.g., 123 Main St)'
-            : hasApiKey && isLoading
-            ? 'Loading address suggestions...'
-            : 'Enter property address'
-        }
+        placeholder={placeholder || defaultPlaceholder}
         autoComplete="off"
         aria-label="Property Address"
       />
-      
-      {/* Loading Spinner */}
+
       {isLoading && (
         <div className="absolute right-3 top-1/2 -translate-y-1/2">
           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-sce-orange"></div>
         </div>
       )}
 
-      {/* Status Badge */}
       {!hasApiKey && (
         <div className="mt-1 text-xs text-yellow-600">
-          ℹ️ Autocomplete disabled. See GOOGLE_MAPS_SETUP.md to enable suggestions.
+          ℹ️ Autocomplete disabled — API key not configured.
         </div>
       )}
 
