@@ -6,7 +6,7 @@ import Head from 'next/head';
 export default function LoginPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const callbackUrl = (router.query.callbackUrl as string) || '/dashboard';
+  const callbackUrl = (router.query.callbackUrl as string) || '/';
   const [email, setEmail] = useState('');
   const [hasGoogle, setHasGoogle] = useState(false);
   const [loading, setLoading] = useState(false);

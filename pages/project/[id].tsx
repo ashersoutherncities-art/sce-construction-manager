@@ -321,7 +321,7 @@ export default function ProjectDetailPage() {
         <div className="text-center py-12">
           <div className="text-red-600 mb-4">{error || 'Project not found'}</div>
           <button
-            onClick={() => router.push('/dashboard')}
+            onClick={() => router.push('/')}
             className="text-sce-orange hover:underline"
           >
             ← Back to Dashboard
@@ -360,7 +360,7 @@ export default function ProjectDetailPage() {
               </div>
               <p className="text-sce-gray">Project ID: {project.id}</p>
             </div>
-            <button onClick={() => router.push('/dashboard')} className="text-sce-orange hover:underline font-semibold">
+            <button onClick={() => router.push('/')} className="text-sce-orange hover:underline font-semibold">
               ← Dashboard
             </button>
           </div>

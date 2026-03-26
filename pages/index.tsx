@@ -1,73 +1,209 @@
-import Head from 'next/head';
+import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/router';
+import Layout from '@/components/Layout';
 import Link from 'next/link';
-import { signIn } from 'next-auth/react';
+import StatusBadge, { PROJECT_STATUSES, STATUS_CONFIG, normalizeStatus } from '@/components/StatusBadge';
 
-export default function Home() {
-  return (
-    <>
-      <Head>
-        <title>SCE Construction Manager | Southern Cities Enterprises</title>
-        <meta name="description" content="Construction project management for Southern Cities Enterprises" />
-      </Head>
+interface Project {
+  id: string;
+  timestamp: string;
+  clientName: string;
+  propertyAddress: string;
+  status: string;
+  budgetMax: number;
+}
 
-      <div className="min-h-screen bg-sce-light">
-        {/* Header */}
-        <header className="bg-sce-navy text-white py-6 px-6 shadow-lg">
-          <div className="container mx-auto flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-serif font-bold">Southern Cities Enterprises</h1>
-              <p className="text-sce-orange mt-1">Construction Management System</p>
-            </div>
-          </div>
-        </header>
+export default function HomePage() {
+  const { data: session, status: authStatus } = useSession();
+  const router = useRouter();
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
-        {/* Hero Section */}
-        <section className="bg-black text-white py-20 px-6">
-          <div className="container mx-auto text-center">
-            <h2 className="text-5xl font-serif font-bold mb-4">
-              Streamline Your Construction Projects
-            </h2>
-            <p className="text-xl text-sce-orange mb-8">
-              From intake to completion, manage everything in one place
-            </p>
-            <div className="flex justify-center gap-4 flex-wrap">
-              <button
-                onClick={() => signIn('google')}
-                className="bg-sce-orange text-white px-8 py-4 rounded-full font-semibold hover:bg-white hover:text-sce-navy transition-all text-lg"
-              >
-                Sign In with Google
-              </button>
-              <Link
-                href="/login"
-                className="border-2 border-sce-orange text-white px-8 py-4 rounded-full font-semibold hover:bg-sce-orange transition-all"
-              >
-                Or use Login Page
-              </Link>
-            </div>
-          </div>
-        </section>
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (authStatus === 'unauthenticated') {
+      router.push('/login');
+    }
+  }, [authStatus, router]);
 
-        {/* Features Section */}
-        <section className="py-16 px-6">
-          <div className="container mx-auto">
-            <h3 className="text-3xl font-serif font-bold text-center mb-12">Key Features</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="bg-white p-8 rounded-lg shadow">
-                <h4 className="text-xl font-bold text-sce-navy mb-3">Project Intake</h4>
-                <p className="text-gray-600">Quickly capture project details, photos, and specifications in one streamlined form.</p>
-              </div>
-              <div className="bg-white p-8 rounded-lg shadow">
-                <h4 className="text-xl font-bold text-sce-navy mb-3">AI Analysis</h4>
-                <p className="text-gray-600">Get instant cost estimates and project analysis powered by AI technology.</p>
-              </div>
-              <div className="bg-white p-8 rounded-lg shadow">
-                <h4 className="text-xl font-bold text-sce-navy mb-3">Dashboard</h4>
-                <p className="text-gray-600">View all your projects at a glance with real-time status tracking and metrics.</p>
-              </div>
-            </div>
-          </div>
-        </section>
+  useEffect(() => {
+    if (session) {
+      fetchProjects();
+    }
+  }, [session]);
+
+  const fetchProjects = async () => {
+    try {
+      const response = await fetch('/api/projects/list');
+      const data = await response.json();
+      if (data.success) {
+        setProjects(data.projects);
+      }
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredProjects = projects.filter((p) => {
+    const statusMatch = filter === 'all' || normalizeStatus(p.status) === filter;
+    const query = searchQuery.toLowerCase();
+    const searchMatch =
+      !query ||
+      p.clientName?.toLowerCase().includes(query) ||
+      p.propertyAddress?.toLowerCase().includes(query) ||
+      p.id?.toLowerCase().includes(query);
+    return statusMatch && searchMatch;
+  });
+
+  const stats = {
+    total: projects.length,
+    intake: projects.filter((p) => normalizeStatus(p.status) === 'intake').length,
+    analyzing: projects.filter((p) => normalizeStatus(p.status) === 'analyzing').length,
+    underwriting: projects.filter((p) => normalizeStatus(p.status) === 'underwriting').length,
+    accepted: projects.filter((p) => normalizeStatus(p.status) === 'accepted').length,
+    closed: projects.filter((p) => normalizeStatus(p.status) === 'closed').length,
+  };
+
+  // Show loading spinner while checking auth
+  if (authStatus === 'loading' || authStatus === 'unauthenticated') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
       </div>
-    </>
+    );
+  }
+
+  return (
+    <Layout title="Project Dashboard">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
+        <div className="bg-white rounded-lg shadow-lg p-5">
+          <div className="text-3xl font-bold text-sce-navy">{stats.total}</div>
+          <div className="text-sce-gray text-sm">Total</div>
+        </div>
+        {PROJECT_STATUSES.map((status) => {
+          const config = STATUS_CONFIG[status];
+          return (
+            <div
+              key={status}
+              className="bg-white rounded-lg shadow-lg p-5 cursor-pointer hover:ring-2 hover:ring-sce-orange transition-all"
+              onClick={() => setFilter(filter === status ? 'all' : status)}
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-xl">{config.icon}</span>
+                <div className={`text-2xl font-bold ${config.color}`}>{stats[status]}</div>
+              </div>
+              <div className="text-sce-gray text-sm">{config.label}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Search + Filters */}
+      <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+        <div className="mb-4">
+          <input
+            type="text"
+            placeholder="Search projects by name, address, or ID..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sce-orange focus:border-transparent"
+          />
+        </div>
+        <div className="flex gap-3 flex-wrap">
+          <button
+            onClick={() => setFilter('all')}
+            className={`px-4 py-2 rounded-full font-semibold transition-all ${
+              filter === 'all'
+                ? 'bg-sce-navy text-white'
+                : 'bg-gray-100 text-sce-gray hover:bg-gray-200'
+            }`}
+          >
+            All ({stats.total})
+          </button>
+          {PROJECT_STATUSES.map((status) => {
+            const config = STATUS_CONFIG[status];
+            return (
+              <button
+                key={status}
+                onClick={() => setFilter(status)}
+                className={`px-4 py-2 rounded-full font-semibold transition-all flex items-center gap-1.5 ${
+                  filter === status
+                    ? 'bg-sce-orange text-white'
+                    : 'bg-gray-100 text-sce-gray hover:bg-gray-200'
+                }`}
+              >
+                <span>{config.icon}</span>
+                {config.label} ({stats[status]})
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Projects List */}
+      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-sce-navy text-white">
+              <tr>
+                <th className="px-6 py-4 text-left">Project ID</th>
+                <th className="px-6 py-4 text-left">Client</th>
+                <th className="px-6 py-4 text-left">Property</th>
+                <th className="px-6 py-4 text-left">Status</th>
+                <th className="px-6 py-4 text-left">Budget</th>
+                <th className="px-6 py-4 text-left">Date</th>
+                <th className="px-6 py-4 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-8 text-center text-sce-gray">
+                    Loading projects...
+                  </td>
+                </tr>
+              ) : filteredProjects.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-8 text-center text-sce-gray">
+                    {searchQuery ? 'No projects match your search' : 'No projects found'}
+                  </td>
+                </tr>
+              ) : (
+                filteredProjects.map((project) => (
+                  <tr key={project.id} className="border-b hover:bg-gray-50">
+                    <td className="px-6 py-4 font-mono text-sm">{project.id}</td>
+                    <td className="px-6 py-4">{project.clientName}</td>
+                    <td className="px-6 py-4 text-sm">{project.propertyAddress}</td>
+                    <td className="px-6 py-4">
+                      <StatusBadge status={project.status} />
+                    </td>
+                    <td className="px-6 py-4">
+                      ${project.budgetMax?.toLocaleString() || 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 text-sm">
+                      {new Date(project.timestamp).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4">
+                      <Link
+                        href={`/project/${project.id}`}
+                        className="text-sce-orange hover:underline font-semibold"
+                      >
+                        View →
+                      </Link>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </Layout>
   );
 }
