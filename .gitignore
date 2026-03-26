@@ -49,3 +49,4 @@ tests/
 credentials/
 .env.local
 .env
+.env.production

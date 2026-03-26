@@ -10,6 +10,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [hasGoogle, setHasGoogle] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (session) {
@@ -25,6 +26,20 @@ export default function LoginPage() {
     });
   }, []);
 
+  // Pick up error from URL query (e.g. OAuth errors)
+  useEffect(() => {
+    if (router.query.error) {
+      const errorMap: Record<string, string> = {
+        OAuthSignin: 'Error starting Google sign in. Please try again.',
+        OAuthCallback: 'Error during Google sign in. Please try again.',
+        OAuthAccountNotLinked: 'This email is already linked to another account.',
+        CredentialsSignin: 'Invalid credentials. Please try again.',
+        Default: 'An error occurred. Please try again.',
+      };
+      setError(errorMap[router.query.error as string] || errorMap.Default);
+    }
+  }, [router.query.error]);
+
   if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -36,9 +51,25 @@ export default function LoginPage() {
   const handleCredentialsLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
+    setError('');
     setLoading(true);
-    await signIn('credentials', { email, callbackUrl });
-    setLoading(false);
+    try {
+      const result = await signIn('credentials', {
+        email,
+        redirect: false,
+        callbackUrl,
+      });
+      if (result?.error) {
+        setError('Sign in failed. Please check your email and try again.');
+        setLoading(false);
+      } else if (result?.ok) {
+        // Successfully authenticated — redirect to dashboard
+        router.push(result.url || callbackUrl);
+      }
+    } catch (err) {
+      setError('An unexpected error occurred. Please try again.');
+      setLoading(false);
+    }
   };
 
   return (
@@ -63,12 +94,9 @@ export default function LoginPage() {
             </div>
 
             {/* Error message */}
-            {router.query.error && (
+            {error && (
               <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm text-center">
-                {router.query.error === 'OAuthSignin' && 'Error starting sign in. Please try again.'}
-                {router.query.error === 'OAuthCallback' && 'Error during sign in. Please try again.'}
-                {router.query.error === 'CredentialsSignin' && 'Invalid credentials. Please try again.'}
-                {router.query.error === 'Default' && 'An error occurred. Please try again.'}
+                {error}
               </div>
             )}
 
