@@ -12,9 +12,9 @@ export const authOptions: NextAuthOptions = {
     signIn: '/login',
   },
   callbacks: {
-    async signIn({ user, account, profile }) {
-      // User session stored in JWT token only
-      // Database operations can be added later
+    async signIn({ user }) {
+      // For now, just accept all Google logins
+      // User data stored in JWT token
       return true;
     },
     async session({ session, token }) {
