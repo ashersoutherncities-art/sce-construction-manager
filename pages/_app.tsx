@@ -6,7 +6,7 @@ import { ToastProvider } from '@/components/Toast'
 
 export default function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   return (
-    <SessionProvider session={session}>
+    <SessionProvider session={session || null}>
       <ToastProvider>
         <Head>
           <link rel="preconnect" href="https://fonts.googleapis.com" />
