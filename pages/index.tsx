@@ -26,8 +26,8 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>SCE Construction Manager | Southern Cities Enterprises</title>
-        <meta name="description" content="Construction project management for Southern Cities Enterprises" />
+        <title>SCE Construction Manager | Southern Cities Construction</title>
+        <meta name="description" content="Construction project management for Southern Cities Construction" />
       </Head>
 
       <div className="min-h-screen bg-sce-light">
@@ -35,7 +35,7 @@ export default function Home() {
         <header className="bg-sce-navy text-white py-6 px-6 shadow-lg">
           <div className="container mx-auto flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-serif font-bold">Southern Cities Enterprises</h1>
+              <h1 className="text-3xl font-serif font-bold">Southern Cities Construction</h1>
               <p className="text-sce-orange mt-1">Construction Management System</p>
             </div>
             <Link
@@ -92,7 +92,7 @@ export default function Home() {
         <footer className="bg-black text-white py-8 px-6">
           <div className="container mx-auto text-center">
             <p className="text-gray-400">
-              © 2024 Southern Cities Enterprises. All rights reserved.
+              © 2024 Southern Cities Construction. All rights reserved.
             </p>
           </div>
         </footer>

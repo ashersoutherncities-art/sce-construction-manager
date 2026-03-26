@@ -90,7 +90,7 @@ export default function LoginPage() {
               <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Playfair Display, serif' }}>
                 SCE Construction Manager
               </h1>
-              <p className="text-gray-500 mt-2">Southern Cities Enterprises</p>
+              <p className="text-gray-500 mt-2">Southern Cities Construction</p>
             </div>
 
             {/* Error message */}

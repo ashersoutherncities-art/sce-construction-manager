@@ -28,7 +28,7 @@ export default function Layout({ children, title }: LayoutProps) {
           <div className="flex justify-between items-center">
             <Link href="/dashboard" className="flex items-center gap-3">
               <div className="text-2xl font-serif font-bold">
-                Southern Cities Enterprises
+                Southern Cities Construction
               </div>
             </Link>
 
@@ -109,7 +109,7 @@ export default function Layout({ children, title }: LayoutProps) {
       <footer className="bg-black text-white py-8 px-6 mt-16">
         <div className="container mx-auto text-center">
           <p className="text-sce-gray">
-            © 2024 Southern Cities Enterprises. All rights reserved.
+            © 2024 Southern Cities Construction. All rights reserved.
           </p>
         </div>
       </footer>

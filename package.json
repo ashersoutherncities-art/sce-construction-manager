@@ -1,7 +1,7 @@
 {
   "name": "sce-construction-manager",
   "version": "1.0.0",
-  "description": "Southern Cities Enterprises Construction Management System",
+  "description": "Southern Cities Construction Management System",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
