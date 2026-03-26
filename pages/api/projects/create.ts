@@ -74,7 +74,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         budgetMax: parseFloat(budgetMax || '0'),
         timelineExpectation: timelineExpectation || '',
         photoFolderId: '',
-        status: 'new',
+        status: 'intake',
       });
       folderId = `mock-folder-${projectId}`;
     } else {
@@ -92,7 +92,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         budgetMax: parseFloat(budgetMax || '0'),
         timelineExpectation: timelineExpectation || '',
         photoFolderId: '',
-        status: 'new',
+        status: 'intake',
       });
 
       // Create folder in Google Drive

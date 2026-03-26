@@ -59,10 +59,10 @@ export function getMockProjects(): Project[] {
   return [...projects];
 }
 
-export function updateMockProjectStatus(projectId: string, status: Project['status']): void {
+export function updateMockProjectStatus(projectId: string, status: string): void {
   const project = projects.find(p => p.id === projectId);
   if (project) {
-    project.status = status;
+    (project as any).status = status;
   }
 }
 

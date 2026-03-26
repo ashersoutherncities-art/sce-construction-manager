@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import Link from 'next/link';
 import { useRequireAuth } from '@/lib/requireAuth';
+import StatusBadge, { PROJECT_STATUSES, STATUS_CONFIG, normalizeStatus } from '@/components/StatusBadge';
 
 interface Project {
   id: string;
@@ -17,6 +18,7 @@ export default function Dashboard() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchProjects();
@@ -36,24 +38,29 @@ export default function Dashboard() {
     }
   };
 
-  const filteredProjects = projects.filter(
-    (p) => filter === 'all' || p.status === filter
-  );
+  const filteredProjects = projects.filter((p) => {
+    // Status filter (normalize both sides for backward compat)
+    const statusMatch = filter === 'all' || normalizeStatus(p.status) === filter;
+    
+    // Search filter
+    const query = searchQuery.toLowerCase();
+    const searchMatch =
+      !query ||
+      p.clientName?.toLowerCase().includes(query) ||
+      p.propertyAddress?.toLowerCase().includes(query) ||
+      p.id?.toLowerCase().includes(query);
 
-  const statusColors: Record<string, string> = {
-    new: 'bg-blue-100 text-blue-800',
-    analyzing: 'bg-yellow-100 text-yellow-800',
-    quoted: 'bg-purple-100 text-purple-800',
-    accepted: 'bg-green-100 text-green-800',
-    'in-progress': 'bg-orange-100 text-orange-800',
-    completed: 'bg-gray-100 text-gray-800',
-  };
+    return statusMatch && searchMatch;
+  });
 
+  // Compute stats using normalized statuses
   const stats = {
     total: projects.length,
-    active: projects.filter((p) => p.status === 'in-progress').length,
-    quoted: projects.filter((p) => p.status === 'quoted').length,
-    completed: projects.filter((p) => p.status === 'completed').length,
+    intake: projects.filter((p) => normalizeStatus(p.status) === 'intake').length,
+    analyzing: projects.filter((p) => normalizeStatus(p.status) === 'analyzing').length,
+    underwriting: projects.filter((p) => normalizeStatus(p.status) === 'underwriting').length,
+    accepted: projects.filter((p) => normalizeStatus(p.status) === 'accepted').length,
+    closed: projects.filter((p) => normalizeStatus(p.status) === 'closed').length,
   };
 
   if (authLoading || !session) {
@@ -67,27 +74,43 @@ export default function Dashboard() {
   return (
     <Layout title="Project Dashboard">
       {/* Stats Cards */}
-      <div className="grid md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow-lg p-6">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
+        <div className="bg-white rounded-lg shadow-lg p-5">
           <div className="text-3xl font-bold text-sce-navy">{stats.total}</div>
-          <div className="text-sce-gray">Total Projects</div>
+          <div className="text-sce-gray text-sm">Total</div>
         </div>
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="text-3xl font-bold text-sce-orange">{stats.active}</div>
-          <div className="text-sce-gray">In Progress</div>
-        </div>
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="text-3xl font-bold text-purple-600">{stats.quoted}</div>
-          <div className="text-sce-gray">Quoted</div>
-        </div>
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="text-3xl font-bold text-green-600">{stats.completed}</div>
-          <div className="text-sce-gray">Completed</div>
-        </div>
+        {PROJECT_STATUSES.map((status) => {
+          const config = STATUS_CONFIG[status];
+          return (
+            <div
+              key={status}
+              className="bg-white rounded-lg shadow-lg p-5 cursor-pointer hover:ring-2 hover:ring-sce-orange transition-all"
+              onClick={() => setFilter(filter === status ? 'all' : status)}
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-xl">{config.icon}</span>
+                <div className={`text-2xl font-bold ${config.color}`}>{stats[status]}</div>
+              </div>
+              <div className="text-sce-gray text-sm">{config.label}</div>
+            </div>
+          );
+        })}
       </div>
 
-      {/* Filters */}
+      {/* Search + Filters */}
       <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+        {/* Search bar */}
+        <div className="mb-4">
+          <input
+            type="text"
+            placeholder="Search projects by name, address, or ID..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sce-orange focus:border-transparent"
+          />
+        </div>
+
+        {/* Status filter pills */}
         <div className="flex gap-3 flex-wrap">
           <button
             onClick={() => setFilter('all')}
@@ -97,23 +120,25 @@ export default function Dashboard() {
                 : 'bg-gray-100 text-sce-gray hover:bg-gray-200'
             }`}
           >
-            All
+            All ({stats.total})
           </button>
-          {['new', 'analyzing', 'quoted', 'accepted', 'in-progress', 'completed'].map(
-            (status) => (
+          {PROJECT_STATUSES.map((status) => {
+            const config = STATUS_CONFIG[status];
+            return (
               <button
                 key={status}
                 onClick={() => setFilter(status)}
-                className={`px-4 py-2 rounded-full font-semibold transition-all ${
+                className={`px-4 py-2 rounded-full font-semibold transition-all flex items-center gap-1.5 ${
                   filter === status
                     ? 'bg-sce-orange text-white'
                     : 'bg-gray-100 text-sce-gray hover:bg-gray-200'
                 }`}
               >
-                {status.charAt(0).toUpperCase() + status.slice(1).replace('-', ' ')}
+                <span>{config.icon}</span>
+                {config.label} ({stats[status]})
               </button>
-            )
-          )}
+            );
+          })}
         </div>
       </div>
 
@@ -142,7 +167,7 @@ export default function Dashboard() {
               ) : filteredProjects.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-8 text-center text-sce-gray">
-                    No projects found
+                    {searchQuery ? 'No projects match your search' : 'No projects found'}
                   </td>
                 </tr>
               ) : (
@@ -152,13 +177,7 @@ export default function Dashboard() {
                     <td className="px-6 py-4">{project.clientName}</td>
                     <td className="px-6 py-4 text-sm">{project.propertyAddress}</td>
                     <td className="px-6 py-4">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          statusColors[project.status] || 'bg-gray-100 text-gray-800'
-                        }`}
-                      >
-                        {project.status}
-                      </span>
+                      <StatusBadge status={project.status} />
                     </td>
                     <td className="px-6 py-4">
                       ${project.budgetMax?.toLocaleString() || 'N/A'}

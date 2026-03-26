@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import { useRequireAuth } from '@/lib/requireAuth';
@@ -9,6 +9,9 @@ import {
   downloadCostEstimatePDF,
   downloadCostEstimateExcel 
 } from '@/lib/exportUtils';
+import StatusDropdown from '@/components/StatusDropdown';
+import StatusBadge, { ProjectStatus, STATUS_CONFIG, normalizeStatus } from '@/components/StatusBadge';
+import { useToast } from '@/components/Toast';
 
 interface Project {
   id: string;
@@ -34,6 +37,7 @@ export default function ProjectDetailPage() {
   const { session, isLoading: authLoading } = useRequireAuth();
   const router = useRouter();
   const { id } = router.query;
+  const { showToast } = useToast();
 
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
@@ -46,6 +50,26 @@ export default function ProjectDetailPage() {
   const [additionalPhotos, setAdditionalPhotos] = useState<File[]>([]);
   const [projectPhotos, setProjectPhotos] = useState<string[]>([]);
   const [loadingPhotos, setLoadingPhotos] = useState(false);
+
+  const handleStatusChange = useCallback(async (newStatus: ProjectStatus) => {
+    if (!project) return;
+    try {
+      const response = await fetch('/api/projects/update-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectId: project.id, status: newStatus }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Failed to update status');
+      
+      setProject((prev) => prev ? { ...prev, status: newStatus } : prev);
+      showToast(`Status updated to ${STATUS_CONFIG[newStatus].label}`, 'success');
+    } catch (err) {
+      console.error('Status update error:', err);
+      showToast(err instanceof Error ? err.message : 'Failed to update status', 'error');
+      throw err;
+    }
+  }, [project, showToast]);
 
   useEffect(() => {
     if (id) {
@@ -307,19 +331,10 @@ export default function ProjectDetailPage() {
     );
   }
 
-  const statusColors: Record<string, string> = {
-    new: 'bg-blue-100 text-blue-800',
-    analyzing: 'bg-yellow-100 text-yellow-800',
-    quoted: 'bg-purple-100 text-purple-800',
-    accepted: 'bg-green-100 text-green-800',
-    'in-progress': 'bg-orange-100 text-orange-800',
-    completed: 'bg-gray-100 text-gray-800',
-  };
-
   return (
     <Layout title={`Project: ${project.clientName}`}>
       <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header - CONTINUING IN NEXT MESSAGE DUE TO LENGTH */}
+        {/* Header */}
         <div className="bg-white rounded-lg shadow-lg p-8">
           <div className="flex justify-between items-start mb-6">
             <div>
@@ -327,9 +342,21 @@ export default function ProjectDetailPage() {
                 <h2 className="text-2xl font-serif font-bold text-sce-navy">
                   {project.clientName}
                 </h2>
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusColors[project.status] || 'bg-gray-100 text-gray-800'}`}>
-                  {project.status.toUpperCase()}
-                </span>
+                {session ? (
+                  <StatusDropdown
+                    currentStatus={project.status}
+                    onStatusChange={handleStatusChange}
+                    project={{
+                      status: project.status,
+                      photoFolderId: project.photoFolderId,
+                      cachedScopeOfWork: project.cachedScopeOfWork || scopeOfWork,
+                      cachedCostEstimate: project.cachedCostEstimate || costEstimate,
+                      photoCount: project.photoCount || projectPhotos.length,
+                    }}
+                  />
+                ) : (
+                  <StatusBadge status={project.status} size="md" />
+                )}
               </div>
               <p className="text-sce-gray">Project ID: {project.id}</p>
             </div>
