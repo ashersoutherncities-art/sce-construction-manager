@@ -38,7 +38,7 @@ export default function ProfilePage() {
               Back to Dashboard
             </Link>
             <button
-              onClick={() => signOut({ callbackUrl: '/login' })}
+              onClick={() => signOut({ callbackUrl: '/' })}
               className="px-4 py-2 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
             >
               Sign Out
@@ -94,7 +94,7 @@ export default function ProfilePage() {
             {/* Actions */}
             <div className="px-8 py-6 bg-gray-50 border-t border-gray-200">
               <button
-                onClick={() => signOut({ callbackUrl: '/login' })}
+                onClick={() => signOut({ callbackUrl: '/' })}
                 className="w-full px-4 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-medium"
               >
                 Sign Out

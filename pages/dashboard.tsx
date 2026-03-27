@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import Link from 'next/link';
-import { useRequireAuth } from '@/lib/requireAuth';
 import StatusBadge, { PROJECT_STATUSES, STATUS_CONFIG, normalizeStatus } from '@/components/StatusBadge';
 
 interface Project {
@@ -13,16 +14,26 @@ interface Project {
   budgetMax: number;
 }
 
-export default function Dashboard() {
-  const { session, isLoading: authLoading } = useRequireAuth();
+export default function DashboardPage() {
+  const { data: session, status: authStatus } = useSession();
+  const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Redirect to login if not authenticated
   useEffect(() => {
-    fetchProjects();
-  }, []);
+    if (authStatus === 'unauthenticated') {
+      router.push('/login');
+    }
+  }, [authStatus, router]);
+
+  useEffect(() => {
+    if (session) {
+      fetchProjects();
+    }
+  }, [session]);
 
   const fetchProjects = async () => {
     try {
@@ -39,21 +50,16 @@ export default function Dashboard() {
   };
 
   const filteredProjects = projects.filter((p) => {
-    // Status filter (normalize both sides for backward compat)
     const statusMatch = filter === 'all' || normalizeStatus(p.status) === filter;
-    
-    // Search filter
     const query = searchQuery.toLowerCase();
     const searchMatch =
       !query ||
       p.clientName?.toLowerCase().includes(query) ||
       p.propertyAddress?.toLowerCase().includes(query) ||
       p.id?.toLowerCase().includes(query);
-
     return statusMatch && searchMatch;
   });
 
-  // Compute stats using normalized statuses
   const stats = {
     total: projects.length,
     intake: projects.filter((p) => normalizeStatus(p.status) === 'intake').length,
@@ -63,7 +69,8 @@ export default function Dashboard() {
     closed: projects.filter((p) => normalizeStatus(p.status) === 'closed').length,
   };
 
-  if (authLoading || !session) {
+  // Show loading spinner while checking auth
+  if (authStatus === 'loading' || authStatus === 'unauthenticated') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
@@ -99,7 +106,6 @@ export default function Dashboard() {
 
       {/* Search + Filters */}
       <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-        {/* Search bar */}
         <div className="mb-4">
           <input
             type="text"
@@ -109,8 +115,6 @@ export default function Dashboard() {
             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sce-orange focus:border-transparent"
           />
         </div>
-
-        {/* Status filter pills */}
         <div className="flex gap-3 flex-wrap">
           <button
             onClick={() => setFilter('all')}

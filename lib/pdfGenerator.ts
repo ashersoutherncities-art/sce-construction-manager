@@ -29,7 +29,7 @@ export function generateBidPDF(data: BidData): jsPDF {
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(24);
   doc.setFont('helvetica', 'bold');
-  doc.text('Southern Cities Enterprises', margin, 20);
+  doc.text('Southern Cities Construction', margin, 20);
   
   doc.setFontSize(12);
   doc.setTextColor(250, 140, 65); // Orange
@@ -236,7 +236,7 @@ export function generateBidPDF(data: BidData): jsPDF {
 1. This bid is valid for 30 days from the date of issue.
 2. All work will be completed in accordance with local building codes and regulations.
 3. Any changes to the scope of work will require a written change order.
-4. Southern Cities Enterprises is licensed and insured.
+4. Southern Cities Construction is licensed and insured.
 5. A certificate of insurance will be provided upon request.
 6. Final payment is due upon completion and client approval.
 7. All materials are guaranteed for one year from completion date.
@@ -259,7 +259,7 @@ export function generateBidPDF(data: BidData): jsPDF {
   
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(10);
-  doc.text('Southern Cities Enterprises', pageWidth / 2, yPosition + 10, { align: 'center' });
+  doc.text('Southern Cities Construction', pageWidth / 2, yPosition + 10, { align: 'center' });
   doc.setFontSize(8);
   doc.text(
     'Charlotte, NC | contact@southerncities.com',

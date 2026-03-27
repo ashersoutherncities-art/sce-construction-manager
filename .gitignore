@@ -49,3 +49,8 @@ tests/
 credentials/
 .env.local
 .env
+.env.production
+.env.prod
+.env.vercel
+.env.prodcheck
+.env*.local

@@ -174,7 +174,7 @@ export async function generateCoverLetter(
   const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
     {
       role: 'system',
-      content: `You are writing a professional cover letter for a construction bid from Southern Cities Enterprises.
+      content: `You are writing a professional cover letter for a construction bid from Southern Cities Construction.
 
 Write in a professional but warm tone. Highlight:
 - Expertise in real estate and construction

@@ -15,6 +15,9 @@ export default function IntakePage() {
     clientEmail: '',
     clientPhone: '',
     propertyAddress: '',
+    propertyCity: '',
+    propertyState: '',
+    propertyZip: '',
     propertyType: 'single-family',
     currentCondition: '',
     scopeRequirements: '',
@@ -142,11 +145,61 @@ export default function IntakePage() {
                     name="propertyAddress"
                     value={formData.propertyAddress}
                     onChange={(value) =>
-                      setFormData({ ...formData, propertyAddress: value })
+                      setFormData((prev) => ({ ...prev, propertyAddress: value }))
+                    }
+                    onAddressSelect={(components) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        propertyAddress: components.streetAddress || components.fullAddress,
+                        propertyCity: components.city,
+                        propertyState: components.state,
+                        propertyZip: components.zip,
+                      }))
                     }
                     required
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-sce-orange"
                   />
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">
+                      City
+                    </label>
+                    <input
+                      type="text"
+                      name="propertyCity"
+                      value={formData.propertyCity}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-sce-orange bg-gray-50"
+                      placeholder="Auto-filled"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">
+                      State
+                    </label>
+                    <input
+                      type="text"
+                      name="propertyState"
+                      value={formData.propertyState}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-sce-orange bg-gray-50"
+                      placeholder="Auto-filled"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">
+                      ZIP Code
+                    </label>
+                    <input
+                      type="text"
+                      name="propertyZip"
+                      value={formData.propertyZip}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-sce-orange bg-gray-50"
+                      placeholder="Auto-filled"
+                    />
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-semibold mb-2">
