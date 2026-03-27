@@ -24,13 +24,15 @@ export default function Layout({ children, title }: LayoutProps) {
   return (
     <div className="min-h-screen bg-sce-light">
       {/* Header */}
-      <header className="bg-sce-navy text-white py-4 px-6 shadow-lg sticky top-0 z-50">
+      <header className="bg-sce-navy text-white py-3 px-6 shadow-lg sticky top-0 z-50">
         <div className="container mx-auto">
           <div className="flex justify-between items-center">
-            <Link href="/" className="flex items-center gap-3">
-              <div className="text-2xl font-serif font-bold">
-                Southern Cities Enterprises
-              </div>
+            <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+              <img 
+                src="/logos/sc-logo-horizontal.svg" 
+                alt="Southern Cities Enterprises" 
+                className="h-16 w-auto"
+              />
             </Link>
 
             <div className="flex items-center gap-6">

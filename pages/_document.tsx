@@ -10,6 +10,10 @@ export default function Document() {
           href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
+        {/* Favicons */}
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.svg" />
+        <meta name="theme-color" content="#001f3f" />
       </Head>
       <body>
         <Main />

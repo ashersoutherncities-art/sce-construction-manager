@@ -2,6 +2,7 @@ import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 import Head from 'next/head';
+import Link from 'next/link';
 
 export default function LoginPage() {
   const { data: session, status } = useSession();
@@ -17,7 +18,7 @@ export default function LoginPage() {
   if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sce-orange" />
       </div>
     );
   }
@@ -27,20 +28,43 @@ export default function LoginPage() {
       <Head>
         <title>Sign In | SCE Construction Manager</title>
       </Head>
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+      {/* Header */}
+      <header className="bg-sce-navy text-white py-3 px-6 shadow-lg">
+        <div className="container mx-auto flex justify-between items-center">
+          <Link href="/" className="hover:opacity-80 transition-opacity">
+            <img 
+              src="/logos/sc-logo-horizontal.svg" 
+              alt="Southern Cities Enterprises" 
+              className="h-16 w-auto"
+            />
+          </Link>
+          <nav className="flex gap-6">
+            <Link href="/" className="text-white hover:text-sce-orange transition-colors">
+              Home
+            </Link>
+            <Link href="/features" className="text-white hover:text-sce-orange transition-colors">
+              Features
+            </Link>
+          </nav>
+        </div>
+      </header>
+
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sce-navy via-blue-900 to-sce-navy">
         <div className="max-w-md w-full mx-4">
           <div className="bg-white rounded-2xl shadow-2xl p-8">
             {/* Logo / Brand */}
             <div className="text-center mb-8">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-xl mb-4">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
+              <div className="mb-6 flex justify-center">
+                <img 
+                  src="/logos/sc-enterprises-01.svg" 
+                  alt="Southern Cities Enterprises" 
+                  className="h-20 w-auto"
+                />
               </div>
-              <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Playfair Display, serif' }}>
-                SCE Construction Manager
+              <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Georgia, serif' }}>
+                Sign In
               </h1>
-              <p className="text-gray-500 mt-2">Southern Cities Enterprises</p>
+              <p className="text-gray-600 mt-2 text-sm">Construction Manager Portal</p>
             </div>
 
             {/* Error message */}

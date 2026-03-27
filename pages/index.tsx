@@ -12,12 +12,23 @@ export default function Home() {
 
       <div className="min-h-screen bg-sce-light">
         {/* Header */}
-        <header className="bg-sce-navy text-white py-6 px-6 shadow-lg">
+        <header className="bg-sce-navy text-white py-3 px-6 shadow-lg">
           <div className="container mx-auto flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-serif font-bold">Southern Cities Enterprises</h1>
-              <p className="text-sce-orange mt-1">Construction Management System</p>
-            </div>
+            <Link href="/" className="hover:opacity-80 transition-opacity">
+              <img 
+                src="/logos/sc-logo-horizontal.svg" 
+                alt="Southern Cities Enterprises" 
+                className="h-16 w-auto"
+              />
+            </Link>
+            <nav className="flex gap-6">
+              <Link href="/features" className="text-white hover:text-sce-orange transition-colors">
+                Features
+              </Link>
+              <Link href="/login" className="text-white hover:text-sce-orange transition-colors">
+                Login
+              </Link>
+            </nav>
           </div>
         </header>
 
@@ -43,27 +54,6 @@ export default function Home() {
               >
                 Or use Login Page
               </Link>
-            </div>
-          </div>
-        </section>
-
-        {/* Features Section */}
-        <section className="py-16 px-6">
-          <div className="container mx-auto">
-            <h3 className="text-3xl font-serif font-bold text-center mb-12">Key Features</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="bg-white p-8 rounded-lg shadow">
-                <h4 className="text-xl font-bold text-sce-navy mb-3">Project Intake</h4>
-                <p className="text-gray-600">Quickly capture project details, photos, and specifications in one streamlined form.</p>
-              </div>
-              <div className="bg-white p-8 rounded-lg shadow">
-                <h4 className="text-xl font-bold text-sce-navy mb-3">AI Analysis</h4>
-                <p className="text-gray-600">Get instant cost estimates and project analysis powered by AI technology.</p>
-              </div>
-              <div className="bg-white p-8 rounded-lg shadow">
-                <h4 className="text-xl font-bold text-sce-navy mb-3">Dashboard</h4>
-                <p className="text-gray-600">View all your projects at a glance with real-time status tracking and metrics.</p>
-              </div>
             </div>
           </div>
         </section>
