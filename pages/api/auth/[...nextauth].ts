@@ -132,13 +132,19 @@ export const authOptions: NextAuthOptions = {
         return false;
       }
       
-      if (!account) {
-        // For credentials provider, account might be null - that's OK
-        if (!credentials) {
-          console.error(`[${timestamp}] [NextAuth] signIn FAILED: account is null and not using credentials provider`);
-          return false;
-        }
-        console.log(`[${timestamp}] [NextAuth] signIn using credentials provider (no account object expected)`);
+      if (!account && !credentials) {
+        // account is null AND not using credentials provider = error
+        console.error(`[${timestamp}] [NextAuth] signIn FAILED: no account and not using credentials`);
+        return false;
+      }
+      
+      if (credentials) {
+        console.log(`[${timestamp}] [NextAuth] signIn using credentials provider`);
+      }
+      
+      if (account && !account.provider) {
+        console.error(`[${timestamp}] [NextAuth] signIn FAILED: account has no provider`);
+        return false;
       }
       
       // CRITICAL: Ensure user object has an ID for OAuth providers
