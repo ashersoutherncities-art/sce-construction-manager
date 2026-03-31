@@ -81,6 +81,14 @@ export const authOptions: NextAuthOptions = {
     signOut: '/',
   },
   debug: process.env.NODE_ENV === 'development' || process.env.NEXTAUTH_DEBUG === 'true',
+  events: {
+    async signIn({ user, account, profile }) {
+      console.log('[NextAuth Event] signIn:', { provider: account?.provider, email: user?.email });
+    },
+    async error({ error }) {
+      console.error('[NextAuth Event] error:', error);
+    },
+  },
   callbacks: {
     async signIn({ user, account, profile }) {
       // Log for debugging
