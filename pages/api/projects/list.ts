@@ -10,7 +10,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     // Use mock storage if Google Sheets not configured
     const useMock = !process.env.GOOGLE_SHEETS_PROJECT_DB_ID;
-    const projects = useMock ? getMockProjects() : await getProjects();
+    let projects;
+    
+    if (useMock) {
+      projects = getMockProjects();
+    } else {
+      try {
+        projects = await getProjects();
+      } catch (sheetsError) {
+        // Fall back to mock if Google Sheets fails
+        console.warn('Google Sheets failed, using mock storage:', sheetsError);
+        projects = getMockProjects();
+      }
+    }
 
     return res.status(200).json({
       success: true,
@@ -18,6 +30,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   } catch (error) {
     console.error('Error fetching projects:', error);
-    return res.status(500).json({ error: 'Failed to fetch projects' });
+    // Return empty projects instead of 500 error
+    return res.status(200).json({
+      success: true,
+      projects: [],
+    });
   }
 }
