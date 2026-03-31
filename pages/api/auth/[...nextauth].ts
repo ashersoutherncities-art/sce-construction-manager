@@ -37,10 +37,8 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
           response_type: 'code',
         },
       },
-      // Use nonce check instead of state/PKCE - nonce is verified via the
-      // ID token and doesn't depend on cookies surviving the redirect chain.
-      // This fixes "State cookie was missing" errors on Vercel serverless.
-      checks: ['nonce'],
+      // Use state check - nonce was causing SessionRequired errors on Vercel
+      checks: ['state'],
       profile(profile) {
         // Explicitly map Google profile to NextAuth user object
         console.log('[NextAuth] [GoogleProvider] Mapping profile to user:', {
@@ -138,6 +136,11 @@ export const authOptions: NextAuthOptions = {
     },
     async redirect({ url, baseUrl }) {
       // Always redirect to dashboard after successful auth
+      console.log(`[NextAuth] redirect callback: url=${url}, baseUrl=${baseUrl}`);
+      // Only redirect to dashboard if coming from sign-in page
+      if (url.includes('error')) {
+        return `${baseUrl}/login?error=${new URLSearchParams(url).get('error')}`;
+      }
       return `${baseUrl}/dashboard`;
     },
 
