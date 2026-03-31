@@ -25,8 +25,8 @@ console.log('[NextAuth] Checking Google credentials:', {
 
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   console.log('[NextAuth] Google provider ENABLED');
-  providers.push(
-    GoogleProvider({
+  try {
+    const googleProvider = GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       authorization: {
@@ -40,10 +40,17 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
       // ID token and doesn't depend on cookies surviving the redirect chain.
       // This fixes "State cookie was missing" errors on Vercel serverless.
       checks: ['nonce'],
-    })
-  );
+    });
+    console.log('[NextAuth] Google provider created successfully');
+    providers.push(googleProvider);
+  } catch (err) {
+    console.error('[NextAuth] Failed to create Google provider:', err);
+  }
 } else {
-  console.error('[NextAuth] Google provider DISABLED - missing credentials!');
+  console.error('[NextAuth] Google provider DISABLED - missing credentials!', {
+    hasId: !!process.env.GOOGLE_CLIENT_ID,
+    hasSecret: !!process.env.GOOGLE_CLIENT_SECRET,
+  });
 }
 
 // Credentials provider with email + bcrypt password verification
@@ -71,6 +78,7 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: '/login',
     error: '/login', // Redirect OAuth errors to login page with error param
+    signOut: '/',
   },
   debug: process.env.NODE_ENV === 'development' || process.env.NEXTAUTH_DEBUG === 'true',
   callbacks: {
