@@ -127,32 +127,10 @@ export const authOptions: NextAuthOptions = {
       console.log(`[${timestamp}] [NextAuth] Full account object:`, JSON.stringify(account, null, 2));
       if (profile) console.log(`[${timestamp}] [NextAuth] Full profile object:`, JSON.stringify(profile, null, 2));
       
+      // Allow any user to sign in
       if (!user) {
         console.error(`[${timestamp}] [NextAuth] signIn FAILED: user is null/undefined`);
         return false;
-      }
-      
-      if (!account && !credentials) {
-        // account is null AND not using credentials provider = error
-        console.error(`[${timestamp}] [NextAuth] signIn FAILED: no account and not using credentials`);
-        return false;
-      }
-      
-      if (credentials) {
-        console.log(`[${timestamp}] [NextAuth] signIn using credentials provider`);
-      }
-      
-      if (account && !account.provider) {
-        console.error(`[${timestamp}] [NextAuth] signIn FAILED: account has no provider`);
-        return false;
-      }
-      
-      // CRITICAL: Ensure user object has an ID for OAuth providers
-      // NextAuth should auto-populate this from profile.sub (Google uses sub as unique ID)
-      // but we'll verify it's set
-      if (account && !user.id) {
-        console.error(`[${timestamp}] [NextAuth] WARNING: OAuth user missing ID - using email as fallback`);
-        user.id = user.email || 'unknown';
       }
       
       console.log(`[${timestamp}] [NextAuth] signIn callback RETURNING TRUE - user allowed with ID: ${user.id}`);
