@@ -42,8 +42,6 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
       checks: ['nonce'],
     })
   );
-}
-
 } else {
   console.error('[NextAuth] Google provider DISABLED - missing credentials!');
 }
@@ -82,7 +80,13 @@ export const authOptions: NextAuthOptions = {
         provider: account?.provider,
         email: user?.email,
         hasProfile: !!profile,
+        userId: user?.id,
+        userName: user?.name,
       });
+      if (!user || !account) {
+        console.error('[NextAuth] signIn FAILED: missing user or account', { hasUser: !!user, hasAccount: !!account });
+        return false;
+      }
       // Allow any Google account to sign in
       return true;
     },
@@ -178,4 +182,8 @@ export const authOptions: NextAuthOptions = {
   },
 };
 
-export default NextAuth(authOptions);
+// Export with error handling
+const handler = NextAuth(authOptions);
+
+// Log all OAuth errors for debugging
+export default handler;
