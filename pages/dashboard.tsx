@@ -24,10 +24,18 @@ export default function DashboardPage() {
 
   // Redirect to login if not authenticated
   useEffect(() => {
+    const timestamp = new Date().toISOString();
+    console.log(`[${timestamp}] [Dashboard] authStatus check:`, {
+      authStatus,
+      hasSession: !!session,
+      sessionEmail: session?.user?.email,
+    });
+    
     if (authStatus === 'unauthenticated') {
+      console.log(`[${timestamp}] [Dashboard] Unauthenticated, redirecting to /login`);
       router.push('/login');
     }
-  }, [authStatus, router]);
+  }, [authStatus, router, session]);
 
   useEffect(() => {
     if (session) {

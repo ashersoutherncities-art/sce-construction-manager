@@ -1,6 +1,6 @@
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 
@@ -8,12 +8,59 @@ export default function LoginPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const callbackUrl = (router.query.callbackUrl as string) || '/dashboard';
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
+  // Log all session and status changes
   useEffect(() => {
+    const timestamp = new Date().toISOString();
+    console.log(`[${timestamp}] [LoginPage] session/status changed:`, {
+      status,
+      hasSession: !!session,
+      sessionEmail: session?.user?.email,
+      callbackUrl,
+    });
+  }, [session, status, callbackUrl]);
+
+  // Redirect when session is established
+  useEffect(() => {
+    const timestamp = new Date().toISOString();
     if (session) {
+      console.log(`[${timestamp}] [LoginPage] Session established, pushing to:`, callbackUrl);
       router.push(callbackUrl);
     }
   }, [session, router, callbackUrl]);
+
+  // Handle email/password form submission
+  const handleCredentialsSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
+
+    try {
+      const result = await signIn('credentials', {
+        email,
+        password,
+        callbackUrl,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setError('Invalid email or password. Please try again.');
+        console.error('[LoginPage] Credentials signin error:', result.error);
+      } else if (result?.ok) {
+        // Redirect will happen via useEffect above when session updates
+        console.log('[LoginPage] Credentials signin successful');
+      }
+    } catch (err) {
+      setError('An error occurred. Please try again.');
+      console.error('[LoginPage] Credentials signin exception:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   if (status === 'loading') {
     return (
@@ -68,18 +115,80 @@ export default function LoginPage() {
             </div>
 
             {/* Error message */}
-            {router.query.error && (
+            {(router.query.error || error) && (
               <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm text-center">
-                {router.query.error === 'OAuthSignin' && 'Error starting sign in. Please try again.'}
-                {router.query.error === 'OAuthCallback' && 'Error during sign in. Please try again.'}
-                {router.query.error === 'Default' && 'An error occurred. Please try again.'}
+                {error ? error : (
+                  <>
+                    {router.query.error === 'OAuthSignin' && 'Error starting sign in. Please try again.'}
+                    {router.query.error === 'OAuthCallback' && 'Error during sign in. Please try again.'}
+                    {router.query.error === 'Default' && 'An error occurred. Please try again.'}
+                  </>
+                )}
               </div>
             )}
 
-            {/* Sign In Button */}
+            {/* Email/Password Form */}
+            <form onSubmit={handleCredentialsSubmit} className="space-y-4">
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  Email Address
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  required
+                  disabled={isLoading}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sce-orange focus:border-transparent outline-none transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                  Password
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  disabled={isLoading}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sce-orange focus:border-transparent outline-none transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full px-6 py-3.5 bg-sce-orange text-white font-semibold rounded-xl hover:bg-orange-600 transition-all duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {isLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                    Signing in...
+                  </>
+                ) : (
+                  'Sign In'
+                )}
+              </button>
+            </form>
+
+            {/* Divider */}
+            <div className="flex items-center gap-4 my-6">
+              <div className="flex-1 h-px bg-gray-300" />
+              <span className="text-xs text-gray-500 font-medium">OR</span>
+              <div className="flex-1 h-px bg-gray-300" />
+            </div>
+
+            {/* Google OAuth Button */}
             <button
               onClick={() => signIn('google', { callbackUrl })}
-              className="w-full flex items-center justify-center gap-3 px-6 py-3.5 bg-white border-2 border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 group"
+              disabled={isLoading}
+              className="w-full flex items-center justify-center gap-3 px-6 py-3.5 bg-white border-2 border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 group disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />

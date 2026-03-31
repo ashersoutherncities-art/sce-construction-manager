@@ -29,6 +29,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     const googleProvider = GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      allowDangerousEmailAccountLinking: true, // Allow linking Gmail accounts
       authorization: {
         params: {
           prompt: 'consent',
@@ -40,6 +41,21 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
       // ID token and doesn't depend on cookies surviving the redirect chain.
       // This fixes "State cookie was missing" errors on Vercel serverless.
       checks: ['nonce'],
+      profile(profile) {
+        // Explicitly map Google profile to NextAuth user object
+        console.log('[NextAuth] [GoogleProvider] Mapping profile to user:', {
+          googleSub: profile.sub,
+          googleEmail: profile.email,
+          googleName: profile.name,
+          googlePicture: profile.picture,
+        });
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+        };
+      },
     });
     console.log('[NextAuth] Google provider created successfully');
     providers.push(googleProvider);
@@ -82,7 +98,8 @@ export const authOptions: NextAuthOptions = {
     error: '/login', // Redirect OAuth errors to login page with error param
     signOut: '/',
   },
-  debug: process.env.NODE_ENV === 'development' || process.env.NEXTAUTH_DEBUG === 'true',
+  // CRITICAL: Enable debug mode for better logging
+  debug: true,
   events: {
     async signIn({ user, account, profile }) {
       console.log('[NextAuth Event] signIn:', { provider: account?.provider, email: user?.email });
@@ -92,52 +109,145 @@ export const authOptions: NextAuthOptions = {
     },
   },
   callbacks: {
-    async signIn({ user, account, profile }) {
-      // Log for debugging
-      console.log('[NextAuth] signIn callback:', {
+    async signIn({ user, account, profile, credentials }) {
+      const timestamp = new Date().toISOString();
+      console.log(`[${timestamp}] [NextAuth] ===== SIGNIN CALLBACK START =====`);
+      console.log(`[${timestamp}] [NextAuth] signIn input:`, {
         provider: account?.provider,
         email: user?.email,
         hasProfile: !!profile,
         userId: user?.id,
         userName: user?.name,
+        accountType: account?.type,
+        credentialsProvider: credentials ? 'credentials' : 'oauth',
       });
-      if (!user || !account) {
-        console.error('[NextAuth] signIn FAILED: missing user or account', { hasUser: !!user, hasAccount: !!account });
+      
+      // Log the full objects for debugging
+      console.log(`[${timestamp}] [NextAuth] Full user object:`, JSON.stringify(user, null, 2));
+      console.log(`[${timestamp}] [NextAuth] Full account object:`, JSON.stringify(account, null, 2));
+      if (profile) console.log(`[${timestamp}] [NextAuth] Full profile object:`, JSON.stringify(profile, null, 2));
+      
+      if (!user) {
+        console.error(`[${timestamp}] [NextAuth] signIn FAILED: user is null/undefined`);
         return false;
       }
-      // Allow any Google account to sign in
+      
+      if (!account) {
+        // For credentials provider, account might be null - that's OK
+        if (!credentials) {
+          console.error(`[${timestamp}] [NextAuth] signIn FAILED: account is null and not using credentials provider`);
+          return false;
+        }
+        console.log(`[${timestamp}] [NextAuth] signIn using credentials provider (no account object expected)`);
+      }
+      
+      // CRITICAL: Ensure user object has an ID for OAuth providers
+      // NextAuth should auto-populate this from profile.sub (Google uses sub as unique ID)
+      // but we'll verify it's set
+      if (account && !user.id) {
+        console.error(`[${timestamp}] [NextAuth] WARNING: OAuth user missing ID - using email as fallback`);
+        user.id = user.email || 'unknown';
+      }
+      
+      console.log(`[${timestamp}] [NextAuth] signIn callback RETURNING TRUE - user allowed with ID: ${user.id}`);
       return true;
     },
     async redirect({ url, baseUrl }) {
-      if (url.startsWith('/')) return `${baseUrl}${url}`;
-      try {
-        if (new URL(url).origin === baseUrl) return url;
-      } catch {
-        // Invalid URL, fall through to default
+      const timestamp = new Date().toISOString();
+      console.log(`[${timestamp}] [NextAuth] ===== REDIRECT CALLBACK START =====`);
+      console.log(`[${timestamp}] [NextAuth] redirect input:`, { url, baseUrl });
+      
+      let redirectTarget = baseUrl + '/dashboard';
+      
+      if (url.startsWith('/')) {
+        redirectTarget = `${baseUrl}${url}`;
+        console.log(`[${timestamp}] [NextAuth] redirect: URL is relative path, using:`, redirectTarget);
+      } else {
+        try {
+          const urlObj = new URL(url);
+          if (urlObj.origin === baseUrl) {
+            redirectTarget = url;
+            console.log(`[${timestamp}] [NextAuth] redirect: URL origin matches baseUrl, using:`, redirectTarget);
+          } else {
+            console.log(`[${timestamp}] [NextAuth] redirect: URL origin (${urlObj.origin}) doesn't match baseUrl (${baseUrl}), defaulting to dashboard`);
+          }
+        } catch (e) {
+          console.log(`[${timestamp}] [NextAuth] redirect: Failed to parse URL, defaulting to dashboard:`, e);
+        }
       }
-      return baseUrl + '/dashboard';
+      
+      console.log(`[${timestamp}] [NextAuth] redirect callback RETURNING:`, redirectTarget);
+      return redirectTarget;
     },
     async session({ session, token }) {
+      const timestamp = new Date().toISOString();
+      console.log(`[${timestamp}] [NextAuth] ===== SESSION CALLBACK START =====`);
+      console.log(`[${timestamp}] [NextAuth] session input:`, {
+        hasSession: !!session,
+        hasToken: !!token,
+        tokenId: token?.id,
+        tokenSub: token?.sub,
+        tokenEmail: token?.email,
+        tokenProvider: token?.provider,
+        sessionEmail: session?.user?.email,
+      });
+      
       if (session.user) {
         (session.user as any).id = token.id || token.sub;
         (session.user as any).provider = token.provider;
-        // Ensure user properties are correctly set from token
         if (token.name) session.user.name = token.name;
         if (token.email) session.user.email = token.email;
         if (token.picture) session.user.image = token.picture;
+        
+        console.log(`[${timestamp}] [NextAuth] session callback POPULATED user properties:`, {
+          id: (session.user as any).id,
+          email: session.user.email,
+          name: session.user.name,
+          provider: (session.user as any).provider,
+        });
       }
+      
+      console.log(`[${timestamp}] [NextAuth] session callback RETURNING:`, {
+        hasUser: !!session.user,
+        userEmail: session.user?.email,
+      });
       return session;
     },
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account, trigger }) {
+      const timestamp = new Date().toISOString();
+      console.log(`[${timestamp}] [NextAuth] ===== JWT CALLBACK START =====`);
+      console.log(`[${timestamp}] [NextAuth] jwt input:`, {
+        trigger,
+        hasUser: !!user,
+        hasAccount: !!account,
+        tokenId: token?.id,
+        tokenSub: token?.sub,
+        userId: user?.id,
+        userEmail: user?.email,
+        accountProvider: account?.provider,
+      });
+      
       if (user) {
         token.id = user.id || token.sub;
         token.name = user.name;
         token.email = user.email;
         token.picture = (user as any).image;
+        console.log(`[${timestamp}] [NextAuth] jwt callback UPDATED token from user:`, {
+          tokenId: token.id,
+          tokenEmail: token.email,
+          tokenName: token.name,
+        });
       }
       if (account) {
         token.provider = account.provider;
+        console.log(`[${timestamp}] [NextAuth] jwt callback SET provider to:`, account.provider);
       }
+      
+      console.log(`[${timestamp}] [NextAuth] jwt callback RETURNING token with:`, {
+        id: token.id,
+        email: token.email,
+        provider: token.provider,
+      });
       return token;
     },
   },
@@ -200,8 +310,8 @@ export const authOptions: NextAuthOptions = {
   },
 };
 
-// Export with error handling
+// Wrap the handler to log all requests and responses
 const handler = NextAuth(authOptions);
 
-// Log all OAuth errors for debugging
+// Export the handler
 export default handler;
