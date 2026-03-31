@@ -254,18 +254,20 @@ export const authOptions: NextAuthOptions = {
       name: 'next-auth.session-token',
       options: {
         httpOnly: true,
-        sameSite: 'lax' as const,
+        sameSite: 'none' as const,
         path: '/',
         secure: true,
+        domain: undefined,
       },
     },
     csrfToken: {
       name: 'next-auth.csrf-token',
       options: {
         httpOnly: true,
-        sameSite: 'lax' as const,
+        sameSite: 'none' as const,
         path: '/',
         secure: true,
+        domain: undefined,
       },
     },
     callbackUrl: {
@@ -275,6 +277,7 @@ export const authOptions: NextAuthOptions = {
         sameSite: 'lax' as const,
         path: '/',
         secure: true,
+        domain: undefined,
       },
     },
     state: {
@@ -285,6 +288,7 @@ export const authOptions: NextAuthOptions = {
         path: '/',
         secure: true,
         maxAge: 900,
+        domain: undefined,
       },
     },
     nonce: {
@@ -294,6 +298,7 @@ export const authOptions: NextAuthOptions = {
         sameSite: 'lax' as const,
         path: '/',
         secure: true,
+        domain: undefined,
       },
     },
   },
