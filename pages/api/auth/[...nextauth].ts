@@ -3,6 +3,15 @@ import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { authenticateUser } from '../../../lib/auth';
 
+// Log environment state at startup
+if (process.env.NODE_ENV === 'production') {
+  console.error('[NextAuth STARTUP] Production environment detected');
+  console.error('[NextAuth STARTUP] GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? 'SET' : 'MISSING');
+  console.error('[NextAuth STARTUP] GOOGLE_CLIENT_SECRET:', process.env.GOOGLE_CLIENT_SECRET ? 'SET' : 'MISSING');
+  console.error('[NextAuth STARTUP] NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
+  console.error('[NextAuth STARTUP] NEXTAUTH_SECRET:', process.env.NEXTAUTH_SECRET ? 'SET' : 'MISSING');
+}
+
 // Build providers list based on available env vars
 const providers: any[] = [];
 
@@ -10,8 +19,8 @@ const providers: any[] = [];
 console.log('[NextAuth] Checking Google credentials:', {
   hasClientId: !!process.env.GOOGLE_CLIENT_ID,
   hasClientSecret: !!process.env.GOOGLE_CLIENT_SECRET,
-  clientIdLength: process.env.GOOGLE_CLIENT_ID?.length,
-  clientSecretLength: process.env.GOOGLE_CLIENT_SECRET?.length,
+  clientIdPrefix: process.env.GOOGLE_CLIENT_ID?.substring(0, 20),
+  clientSecretPrefix: process.env.GOOGLE_CLIENT_SECRET?.substring(0, 20),
 });
 
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
