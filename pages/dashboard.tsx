@@ -14,7 +14,20 @@ interface Project {
   budgetMax: number;
 }
 
+// Disable SSR - render only on client to avoid server-side auth issues
+export const getServerSideProps = async () => {
+  return {
+    props: {},
+  };
+};
+
 export default function DashboardPage() {
+  const [isClient, setIsClient] = useState(false);
+  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   // Force refetch session on mount and every 30 seconds
   const { data: session, status: authStatus } = useSession({ 
     required: true,
