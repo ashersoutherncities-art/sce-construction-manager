@@ -32,7 +32,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
       allowDangerousEmailAccountLinking: true, // Allow linking Gmail accounts
       authorization: {
         params: {
-          prompt: 'consent',
+          prompt: 'select_account',
           access_type: 'offline',
           response_type: 'code',
         },
@@ -245,7 +245,7 @@ export const authOptions: NextAuthOptions = {
       name: 'next-auth.session-token',
       options: {
         httpOnly: true,
-        sameSite: 'none' as const,
+        sameSite: 'lax' as const,
         path: '/',
         secure: true,
         domain: undefined,
@@ -255,7 +255,7 @@ export const authOptions: NextAuthOptions = {
       name: 'next-auth.csrf-token',
       options: {
         httpOnly: true,
-        sameSite: 'none' as const,
+        sameSite: 'lax' as const,
         path: '/',
         secure: true,
         domain: undefined,
