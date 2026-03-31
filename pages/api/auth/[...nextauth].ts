@@ -158,16 +158,7 @@ export const authOptions: NextAuthOptions = {
       console.log(`[${timestamp}] [NextAuth] signIn callback RETURNING TRUE - user allowed with ID: ${user.id}`);
       return true;
     },
-    async redirect({ url, baseUrl }) {
-      const timestamp = new Date().toISOString();
-      console.log(`[${timestamp}] [NextAuth] ===== REDIRECT CALLBACK START =====`);
-      console.log(`[${timestamp}] [NextAuth] redirect input:`, { url, baseUrl });
-      
-      // Always redirect to dashboard - let the middleware handle login redirects
-      const dashboard = `${baseUrl}/dashboard`;
-      console.log(`[${timestamp}] [NextAuth] redirect: Always redirecting to dashboard:`, dashboard);
-      return dashboard;
-    },
+
     async session({ session, token }) {
       const timestamp = new Date().toISOString();
       console.log(`[${timestamp}] [NextAuth] ===== SESSION CALLBACK START =====`);
