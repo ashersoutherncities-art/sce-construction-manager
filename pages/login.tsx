@@ -5,7 +5,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 
 export default function LoginPage() {
-  const { data: session, status } = useSession();
+  const { data: session, status } = useSession({ required: false });
   const router = useRouter();
   const callbackUrl = (router.query.callbackUrl as string) || '/dashboard';
   const [email, setEmail] = useState('');
