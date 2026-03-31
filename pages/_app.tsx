@@ -30,7 +30,7 @@ class AuthErrorBoundary extends React.Component<
 export default function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   return (
     <AuthErrorBoundary>
-      <SessionProvider session={session || null} refetchInterval={5 * 60} refetchOnWindowFocus={true}>
+      <SessionProvider session={session || null} refetchInterval={30} refetchOnWindowFocus={true} refetchOnReconnect={true}>
         <ToastProvider>
           <Component {...pageProps} />
         </ToastProvider>

@@ -15,14 +15,17 @@ interface Project {
 }
 
 export default function DashboardPage() {
-  const { data: session, status: authStatus } = useSession();
+  // Force refetch session on mount and every 30 seconds
+  const { data: session, status: authStatus } = useSession({ 
+    required: true,
+  });
   const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Redirect to login if not authenticated
+  // Redirect to login if not authenticated, but wait for session check to complete
   useEffect(() => {
     const timestamp = new Date().toISOString();
     console.log(`[${timestamp}] [Dashboard] authStatus check:`, {
@@ -31,11 +34,12 @@ export default function DashboardPage() {
       sessionEmail: session?.user?.email,
     });
     
+    // Only redirect if we've checked and confirmed no session
     if (authStatus === 'unauthenticated') {
       console.log(`[${timestamp}] [Dashboard] Unauthenticated, redirecting to /login`);
       router.push('/login');
     }
-  }, [authStatus, router, session]);
+  }, [authStatus, router]);
 
   useEffect(() => {
     if (session) {
