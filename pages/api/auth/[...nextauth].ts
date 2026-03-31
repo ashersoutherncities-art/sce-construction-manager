@@ -50,7 +50,9 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   console.error('[NextAuth] Google provider DISABLED - missing credentials!', {
     hasId: !!process.env.GOOGLE_CLIENT_ID,
     hasSecret: !!process.env.GOOGLE_CLIENT_SECRET,
+    NODE_ENV: process.env.NODE_ENV,
   });
+  // Don't add Google provider if credentials are missing
 }
 
 // Credentials provider with email + bcrypt password verification
