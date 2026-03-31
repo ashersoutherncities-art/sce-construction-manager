@@ -7,7 +7,15 @@ import { authenticateUser } from '../../../lib/auth';
 const providers: any[] = [];
 
 // Google OAuth provider - only add if credentials are configured
+console.log('[NextAuth] Checking Google credentials:', {
+  hasClientId: !!process.env.GOOGLE_CLIENT_ID,
+  hasClientSecret: !!process.env.GOOGLE_CLIENT_SECRET,
+  clientIdLength: process.env.GOOGLE_CLIENT_ID?.length,
+  clientSecretLength: process.env.GOOGLE_CLIENT_SECRET?.length,
+});
+
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  console.log('[NextAuth] Google provider ENABLED');
   providers.push(
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
@@ -25,6 +33,10 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
       checks: ['nonce'],
     })
   );
+}
+
+} else {
+  console.error('[NextAuth] Google provider DISABLED - missing credentials!');
 }
 
 // Credentials provider with email + bcrypt password verification
