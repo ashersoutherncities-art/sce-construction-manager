@@ -163,28 +163,10 @@ export const authOptions: NextAuthOptions = {
       console.log(`[${timestamp}] [NextAuth] ===== REDIRECT CALLBACK START =====`);
       console.log(`[${timestamp}] [NextAuth] redirect input:`, { url, baseUrl });
       
-      // If URL starts with /, it's a relative path - allow it
-      if (url.startsWith('/')) {
-        const redirectTarget = `${baseUrl}${url}`;
-        console.log(`[${timestamp}] [NextAuth] redirect: URL is relative, returning:`, redirectTarget);
-        return redirectTarget;
-      }
-      
-      // If it's an absolute URL on our domain, allow it
-      try {
-        const urlObj = new URL(url);
-        if (urlObj.origin === baseUrl) {
-          console.log(`[${timestamp}] [NextAuth] redirect: URL origin matches baseUrl, returning:`, url);
-          return url;
-        }
-      } catch (e) {
-        console.log(`[${timestamp}] [NextAuth] redirect: Failed to parse URL:`, e);
-      }
-      
-      // Default to dashboard
-      const defaultRedirect = `${baseUrl}/dashboard`;
-      console.log(`[${timestamp}] [NextAuth] redirect: No valid URL found, defaulting to:`, defaultRedirect);
-      return defaultRedirect;
+      // Always redirect to dashboard - let the middleware handle login redirects
+      const dashboard = `${baseUrl}/dashboard`;
+      console.log(`[${timestamp}] [NextAuth] redirect: Always redirecting to dashboard:`, dashboard);
+      return dashboard;
     },
     async session({ session, token }) {
       const timestamp = new Date().toISOString();
