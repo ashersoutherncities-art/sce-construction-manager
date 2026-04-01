@@ -71,12 +71,12 @@ export default function LoginPage() {
   }
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col overflow-hidden">
       <Head>
         <title>Sign In | SCE Construction Manager</title>
       </Head>
       {/* Header */}
-      <header className="bg-sce-navy text-white py-3 px-6 shadow-lg">
+      <header className="bg-sce-navy text-white py-3 px-6 shadow-lg relative z-10">
         <div className="container mx-auto flex justify-between items-center">
           <Link href="/" className="hover:opacity-80 transition-opacity">
             <img 
@@ -96,7 +96,7 @@ export default function LoginPage() {
         </div>
       </header>
 
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sce-navy via-blue-900 to-sce-navy">
+      <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-sce-navy via-blue-900 to-sce-navy overflow-hidden relative z-0">
         <div className="max-w-md w-full mx-4">
           <div className="bg-white rounded-2xl shadow-2xl p-8">
             {/* Logo / Brand */}
@@ -226,6 +226,6 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
