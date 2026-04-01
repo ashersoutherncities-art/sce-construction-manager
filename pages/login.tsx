@@ -100,12 +100,12 @@ export default function LoginPage() {
         <div className="max-w-md w-full mx-4">
           <div className="bg-white rounded-2xl shadow-2xl p-8">
             {/* Logo / Brand */}
-            <div className="text-center mb-8">
-              <div className="mb-6 flex justify-center items-center w-full">
+            <div className="text-center mb-8 flex flex-col items-center">
+              <div className="mb-6 flex justify-center items-center">
                 <img 
                   src="/logos/sc-construction-logo.png" 
                   alt="Southern Cities Construction" 
-                  className="h-28 md:h-32 w-auto mx-auto"
+                  className="h-28 md:h-32 w-auto"
                 />
               </div>
               <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Georgia, serif' }}>
