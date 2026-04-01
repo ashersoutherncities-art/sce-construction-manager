@@ -13,7 +13,6 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Log all session and status changes
   useEffect(() => {
     const timestamp = new Date().toISOString();
     console.log(`[${timestamp}] [LoginPage] session/status changed:`, {
@@ -24,7 +23,6 @@ export default function LoginPage() {
     });
   }, [session, status, callbackUrl]);
 
-  // Redirect when session is established
   useEffect(() => {
     const timestamp = new Date().toISOString();
     if (session) {
@@ -33,7 +31,6 @@ export default function LoginPage() {
     }
   }, [session, router, callbackUrl]);
 
-  // Handle email/password form submission
   const handleCredentialsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -51,7 +48,6 @@ export default function LoginPage() {
         setError('Invalid email or password. Please try again.');
         console.error('[LoginPage] Credentials signin error:', result.error);
       } else if (result?.ok) {
-        // Redirect will happen via useEffect above when session updates
         console.log('[LoginPage] Credentials signin successful');
       }
     } catch (err) {
@@ -71,19 +67,20 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col overflow-hidden">
+    <div className="min-h-screen flex flex-col overflow-hidden bg-white">
       <Head>
         <title>Sign In | SCE Construction Manager</title>
       </Head>
+      
       {/* Header */}
-      <header className="bg-sce-navy text-white py-2 md:py-3 px-4 md:px-6 shadow-lg relative z-10">
+      <header className="bg-sce-navy text-white py-3 md:py-4 px-4 md:px-6 shadow-lg relative z-10">
         <div className="container mx-auto flex justify-between items-center">
           <Link href="/" className="hover:opacity-80 transition-opacity flex-shrink-0">
             <div className="text-xl md:text-2xl font-serif font-bold text-white">
-              Southern Cities Enterprises
+              Southern Cities Construction
             </div>
           </Link>
-          <nav className="flex gap-3 md:gap-6 text-sm md:text-base">
+          <nav className="flex gap-4 md:gap-8 text-sm md:text-base">
             <Link href="/" className="text-white hover:text-sce-orange transition-colors whitespace-nowrap">
               Home
             </Link>
@@ -94,22 +91,104 @@ export default function LoginPage() {
         </div>
       </header>
 
-      <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-sce-navy via-blue-900 to-sce-navy overflow-hidden relative z-0">
-        <div className="max-w-md w-full mx-4">
-          <div className="bg-white rounded-2xl shadow-2xl p-8">
+      <div className="flex-1 flex overflow-hidden bg-white">
+        {/* Left side - Content & Features (Hidden on mobile) */}
+        <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-sce-navy via-blue-900 to-sce-navy p-12 flex-col justify-center overflow-y-auto">
+          <div className="max-w-lg">
+            <div className="mb-8">
+              <h2 className="text-4xl font-bold text-white mb-3">Welcome Back</h2>
+              <p className="text-lg text-blue-100">Professional project management for your construction business</p>
+            </div>
+
+            {/* Features List */}
+            <div className="space-y-6 mb-8">
+              <div className="flex gap-4">
+                <div className="flex-shrink-0">
+                  <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-sce-orange">
+                    <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white">Real-time Tracking</h3>
+                  <p className="text-blue-100 text-sm mt-1">Monitor all your construction projects in one dashboard</p>
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <div className="flex-shrink-0">
+                  <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-sce-orange">
+                    <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.856-1.487M15 10a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white">Subcontractor Hub</h3>
+                  <p className="text-blue-100 text-sm mt-1">Organize and coordinate with all your subcontractors</p>
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <div className="flex-shrink-0">
+                  <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-sce-orange">
+                    <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white">Budget Tracking</h3>
+                  <p className="text-blue-100 text-sm mt-1">Keep track of budgets, invoices, and payments</p>
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <div className="flex-shrink-0">
+                  <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-sce-orange">
+                    <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white">Analytics</h3>
+                  <p className="text-blue-100 text-sm mt-1">Get detailed insights and reports on your projects</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-2 gap-4 pt-8 border-t border-blue-700">
+              <div>
+                <div className="text-3xl font-bold text-sce-orange">8+</div>
+                <p className="text-blue-100 text-sm mt-1">Active Projects</p>
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-sce-orange">100%</div>
+                <p className="text-blue-100 text-sm mt-1">Team Satisfaction</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right side - Login Form */}
+        <div className="w-full lg:w-1/2 flex items-center justify-center p-4 md:p-8 overflow-y-auto">
+          <div className="w-full max-w-sm">
             {/* Logo / Brand */}
             <div className="text-center mb-8 flex flex-col items-center justify-center">
-              <div className="mb-6 w-full flex justify-center items-center">
+              <div className="mb-4 w-full flex justify-center items-center">
                 <img 
                   src="/logos/sc-construction-logo.png" 
                   alt="Southern Cities Construction" 
-                  className="h-28 md:h-32 w-auto mx-auto"
+                  className="h-20 md:h-24 w-auto mx-auto"
                 />
               </div>
               <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Georgia, serif' }}>
                 Sign In
               </h1>
-              <p className="text-gray-600 mt-2 text-sm">Construction Manager Portal</p>
+              <p className="text-gray-600 mt-2 text-sm">Access your construction projects</p>
             </div>
 
             {/* Error message */}
@@ -132,7 +211,7 @@ export default function LoginPage() {
             )}
 
             {/* Email/Password Form */}
-            <form onSubmit={handleCredentialsSubmit} className="space-y-4">
+            <form onSubmit={handleCredentialsSubmit} className="space-y-4 mb-6">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                   Email Address
@@ -237,4 +316,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
