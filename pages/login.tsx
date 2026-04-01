@@ -76,20 +76,20 @@ export default function LoginPage() {
         <title>Sign In | SCE Construction Manager</title>
       </Head>
       {/* Header */}
-      <header className="bg-sce-navy text-white py-3 px-6 shadow-lg relative z-10">
+      <header className="bg-sce-navy text-white py-2 md:py-3 px-4 md:px-6 shadow-lg relative z-10">
         <div className="container mx-auto flex justify-between items-center">
-          <Link href="/" className="hover:opacity-80 transition-opacity">
+          <Link href="/" className="hover:opacity-80 transition-opacity flex-shrink-0">
             <img 
-              src="/logos/sc-logo-horizontal.svg" 
-              alt="Southern Cities Enterprises" 
-              className="h-16 w-auto"
+              src="/logos/sc-construction-logo.png" 
+              alt="Southern Cities Construction" 
+              className="h-12 md:h-20 w-auto"
             />
           </Link>
-          <nav className="flex gap-6">
-            <Link href="/" className="text-white hover:text-sce-orange transition-colors">
+          <nav className="flex gap-3 md:gap-6 text-sm md:text-base">
+            <Link href="/" className="text-white hover:text-sce-orange transition-colors whitespace-nowrap">
               Home
             </Link>
-            <Link href="/features" className="text-white hover:text-sce-orange transition-colors">
+            <Link href="/features" className="text-white hover:text-sce-orange transition-colors whitespace-nowrap">
               Features
             </Link>
           </nav>
@@ -103,9 +103,9 @@ export default function LoginPage() {
             <div className="text-center mb-8">
               <div className="mb-6 flex justify-center">
                 <img 
-                  src="/logos/construction-logo.png" 
+                  src="/logos/sc-construction-logo.png" 
                   alt="Southern Cities Construction" 
-                  className="h-24 w-auto"
+                  className="h-28 md:h-32 w-auto"
                 />
               </div>
               <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Georgia, serif' }}>
