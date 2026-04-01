@@ -79,11 +79,9 @@ export default function LoginPage() {
       <header className="bg-sce-navy text-white py-2 md:py-3 px-4 md:px-6 shadow-lg relative z-10">
         <div className="container mx-auto flex justify-between items-center">
           <Link href="/" className="hover:opacity-80 transition-opacity flex-shrink-0">
-            <img 
-              src="/logos/sc-construction-logo.png" 
-              alt="Southern Cities Construction" 
-              className="h-12 md:h-20 w-auto"
-            />
+            <div className="text-xl md:text-2xl font-serif font-bold text-white">
+              Southern Cities Enterprises
+            </div>
           </Link>
           <nav className="flex gap-3 md:gap-6 text-sm md:text-base">
             <Link href="/" className="text-white hover:text-sce-orange transition-colors whitespace-nowrap">
