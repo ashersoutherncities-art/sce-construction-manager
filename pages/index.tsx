@@ -16,9 +16,9 @@ export default function Home() {
           <div className="container mx-auto flex justify-between items-center">
             <Link href="/" className="hover:opacity-80 transition-opacity flex-shrink-0">
               <img 
-                src="/logos/sc-logo-horizontal.svg" 
-                alt="Southern Cities Enterprises" 
-                className="h-10 md:h-16 w-auto"
+                src="/logos/sc-construction-logo.png" 
+                alt="Southern Cities Construction" 
+                className="h-12 md:h-20 w-auto"
               />
             </Link>
             <nav className="flex gap-3 md:gap-6 text-sm md:text-base">
