@@ -62,10 +62,22 @@ export default function DashboardPage() {
 
   const fetchProjects = async () => {
     try {
+      const timestamp = new Date().toISOString();
+      console.log(`[${timestamp}] [Dashboard] Fetching projects for user:`, session?.user?.email);
+      
       const response = await fetch('/api/projects/list');
       const data = await response.json();
+      
+      if (!response.ok) {
+        console.error(`[${timestamp}] [Dashboard] ❌ API error:`, data.error);
+        return;
+      }
+
       if (data.success) {
+        console.log(`[${timestamp}] [Dashboard] ✅ Loaded ${data.projects.length} projects for ${data.userEmail}`);
         setProjects(data.projects);
+      } else {
+        console.error(`[${timestamp}] [Dashboard] API returned success:false`, data.error);
       }
     } catch (error) {
       console.error('Error fetching projects:', error);
@@ -105,6 +117,21 @@ export default function DashboardPage() {
 
   return (
     <Layout title="Project Dashboard">
+      {/* User Info Banner */}
+      <div className="bg-sce-navy text-white rounded-lg p-4 mb-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <p className="text-sm text-gray-300">Logged in as</p>
+            <p className="text-xl font-semibold">{session?.user?.name || session?.user?.email}</p>
+            <p className="text-sm text-gray-400">{session?.user?.email}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-sm text-gray-300">Personal Dashboard</p>
+            <p className="text-lg font-semibold">Only Your Projects</p>
+          </div>
+        </div>
+      </div>
+
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
         <div className="bg-white rounded-lg shadow-lg p-5">
