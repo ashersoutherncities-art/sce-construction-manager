@@ -81,6 +81,49 @@ export const authOptions: NextAuthOptions = {
         console.error('[NextAuth] signIn FAILED: no email');
         return false;
       }
+
+      // For Google OAuth, auto-create user if they don't exist
+      if (account?.provider === 'google') {
+        try {
+          const prisma = (await import('@/lib/prisma')).default;
+          
+          // Check if user exists
+          const existingUser = await prisma.user.findUnique({
+            where: { email: user.email },
+          });
+
+          // If user doesn't exist, create them
+          if (!existingUser) {
+            console.log('[NextAuth] Creating new user from Google signup:', user.email);
+            const newUser = await prisma.user.create({
+              data: {
+                email: user.email,
+                name: user.name || 'Google User',
+                image: user.image,
+                role: 'USER',
+                emailVerified: new Date(), // Google email is already verified
+                password: null, // No password for OAuth users
+              },
+            });
+            
+            // Update the user object with database ID
+            user.id = newUser.id;
+            console.log('[NextAuth] New user created:', newUser.email);
+          } else {
+            // Update user with latest info from Google
+            user.id = existingUser.id;
+            if (user.image && !existingUser.image) {
+              await prisma.user.update({
+                where: { email: user.email },
+                data: { image: user.image },
+              });
+            }
+          }
+        } catch (error) {
+          console.error('[NextAuth] Error in Google signup:', error);
+          return false;
+        }
+      }
       
       return true;
     },
