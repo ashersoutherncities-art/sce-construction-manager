@@ -103,9 +103,9 @@ export default function LoginPage() {
             <div className="text-center mb-8">
               <div className="mb-6 flex justify-center">
                 <img 
-                  src="/logos/sc-enterprises-01.svg" 
-                  alt="Southern Cities Enterprises" 
-                  className="h-20 w-auto"
+                  src="/logos/construction-logo.png" 
+                  alt="Southern Cities Construction" 
+                  className="h-24 w-auto"
                 />
               </div>
               <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Georgia, serif' }}>
