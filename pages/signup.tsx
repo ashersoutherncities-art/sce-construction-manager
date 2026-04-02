@@ -136,7 +136,7 @@ export default function SignupPage() {
             <div className="text-center mb-8 flex flex-col items-center justify-center">
               <div className="mb-6 w-full flex justify-center items-center">
                 <img 
-                  src="/logos/sc-construction-logo.png" 
+                  src="/sc-logo-white.svg" 
                   alt="Southern Cities Construction" 
                   className="h-28 md:h-32 w-auto mx-auto"
                 />

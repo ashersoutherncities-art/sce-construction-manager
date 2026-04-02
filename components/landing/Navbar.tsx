@@ -12,7 +12,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex-shrink-0">
             <img
-              src="/logos/sc-construction-logo.png"
+              src="/sc-logo-white.svg"
               alt="Southern Cities Construction"
               className="h-10 md:h-14 w-auto"
             />

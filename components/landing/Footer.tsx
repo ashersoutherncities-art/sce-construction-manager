@@ -8,7 +8,7 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <img
-              src="/logos/sc-construction-logo.png"
+              src="/sc-logo-white.svg"
               alt="Southern Cities Construction"
               className="h-12 w-auto mb-4"
             />

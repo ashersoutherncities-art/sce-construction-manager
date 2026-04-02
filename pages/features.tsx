@@ -15,7 +15,7 @@ export default function Features() {
           <div className="container mx-auto flex justify-between items-center">
             <Link href="/" className="hover:opacity-80 transition-opacity">
               <img 
-                src="/logos/sc-logo-horizontal.svg" 
+                src="/sc-logo-white.svg" 
                 alt="Southern Cities Enterprises" 
                 className="h-16 w-auto"
               />
