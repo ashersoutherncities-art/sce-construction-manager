@@ -1,268 +1,227 @@
 import Head from 'next/head';
-import Link from 'next/link';
-import { signIn } from 'next-auth/react';
+import Navbar from '@/components/landing/Navbar';
+import Hero from '@/components/landing/Hero';
+import Button from '@/components/landing/Button';
+import FeatureCard from '@/components/landing/FeatureCard';
+import BenefitItem from '@/components/landing/BenefitItem';
+import Footer from '@/components/landing/Footer';
+
+/* ── SVG Icons ── */
+const IconClipboard = () => (
+  <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+  </svg>
+);
+const IconUsers = () => (
+  <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+  </svg>
+);
+const IconCurrency = () => (
+  <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+const IconCamera = () => (
+  <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z" />
+  </svg>
+);
+const IconChart = () => (
+  <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+  </svg>
+);
+const IconDocument = () => (
+  <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+  </svg>
+);
 
 export default function Home() {
   return (
     <>
       <Head>
-        <title>SCE Construction Manager | Project Management Software</title>
-        <meta name="description" content="Professional construction project management software for Southern Cities Enterprises. Track projects, manage subcontractors, and streamline budgets." />
+        <title>SCE Construction Manager — Project Management for GCs</title>
+        <meta
+          name="description"
+          content="Track projects, manage subs, control budgets, and keep every stakeholder in the loop. Built by a general contractor, for general contractors."
+        />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <div className="min-h-screen bg-white">
-        {/* Header */}
-        <header className="bg-sce-navy text-white py-3 md:py-4 px-4 md:px-6 shadow-lg sticky top-0 z-50">
-          <div className="container mx-auto flex justify-between items-center">
-            <Link href="/" className="hover:opacity-80 transition-opacity flex-shrink-0">
-              <img 
-                src="/logos/sc-construction-logo.png" 
-                alt="Southern Cities Construction" 
-                className="h-12 md:h-16 w-auto"
-              />
-            </Link>
-            <nav className="flex gap-4 md:gap-8 text-sm md:text-base items-center">
-              <Link href="/features" className="text-white hover:text-sce-orange transition-colors whitespace-nowrap">
+        <Navbar />
+        <Hero />
+
+        {/* ── Value Proposition ── */}
+        <section id="benefits" className="py-20 md:py-28 px-4 sm:px-6 lg:px-8 bg-white">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid lg:grid-cols-2 gap-16 items-center">
+              {/* Left column — copy */}
+              <div>
+                <span className="text-sce-orange font-semibold text-sm uppercase tracking-wider">
+                  Why Construction Manager
+                </span>
+                <h2 className="text-3xl sm:text-4xl font-bold text-sce-navy mt-3 mb-8 leading-tight">
+                  Stop juggling spreadsheets.{' '}
+                  <span className="text-sce-orange">Start running jobs.</span>
+                </h2>
+                <div className="space-y-8">
+                  <BenefitItem
+                    number="1"
+                    title="One Dashboard for Every Job"
+                    description="See all active projects, budgets, and timelines at a glance. No more tab-switching between spreadsheets and email."
+                  />
+                  <BenefitItem
+                    number="2"
+                    title="Subcontractor Management Built In"
+                    description="Track your subs, their bids, payment status, and performance — all tied directly to the project they're working on."
+                  />
+                  <BenefitItem
+                    number="3"
+                    title="Real-Time Budget Tracking"
+                    description="Know exactly where every dollar goes. Compare estimated vs. actual costs and catch overruns before they become problems."
+                  />
+                  <BenefitItem
+                    number="4"
+                    title="Photo Documentation & Reports"
+                    description="Upload progress photos, generate PDF reports, and keep an airtight paper trail for every job from start to finish."
+                  />
+                </div>
+              </div>
+
+              {/* Right column — illustration card */}
+              <div className="relative">
+                <div className="bg-gradient-to-br from-sce-navy to-[#1a3068] rounded-3xl p-8 md:p-10 text-white shadow-2xl">
+                  <div className="space-y-5">
+                    {/* Mini dashboard mockup */}
+                    <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-sm font-medium text-white/80">Active Projects</span>
+                        <span className="text-2xl font-bold text-sce-orange">8</span>
+                      </div>
+                      <div className="w-full bg-white/10 rounded-full h-2">
+                        <div className="bg-sce-orange h-2 rounded-full" style={{ width: '72%' }} />
+                      </div>
+                      <p className="text-xs text-white/50 mt-1">72% on schedule</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+                        <p className="text-xs text-white/60 mb-1">Total Budget</p>
+                        <p className="text-lg font-bold">$1.2M</p>
+                      </div>
+                      <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+                        <p className="text-xs text-white/60 mb-1">Active Subs</p>
+                        <p className="text-lg font-bold">14</p>
+                      </div>
+                    </div>
+
+                    <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+                      <p className="text-xs text-white/60 mb-2">Recent Activity</p>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-sm">
+                          <div className="w-2 h-2 bg-green-400 rounded-full" />
+                          <span className="text-white/80">1234 Oak St — Framing complete</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <div className="w-2 h-2 bg-sce-orange rounded-full" />
+                          <span className="text-white/80">567 Elm Ave — Electrical in progress</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <div className="w-2 h-2 bg-blue-400 rounded-full" />
+                          <span className="text-white/80">890 Pine Dr — Permits approved</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {/* Decorative dot */}
+                <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-sce-orange/10 rounded-full blur-2xl" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Features Grid ── */}
+        <section className="py-20 md:py-28 px-4 sm:px-6 lg:px-8 bg-sce-light">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-14">
+              <span className="text-sce-orange font-semibold text-sm uppercase tracking-wider">
                 Features
-              </Link>
-              <Link
-                href="/login"
-                className="bg-sce-orange text-white px-4 md:px-6 py-2 md:py-2.5 rounded-lg hover:bg-orange-600 transition-colors font-semibold whitespace-nowrap"
-              >
-                Login
-              </Link>
-            </nav>
-          </div>
-        </header>
-
-        {/* Hero Section */}
-        <section className="bg-gradient-to-br from-sce-navy via-blue-900 to-sce-navy text-white py-16 md:py-24 px-4 md:px-6 relative overflow-hidden">
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-sce-orange rounded-full filter blur-3xl"></div>
-            <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-400 rounded-full filter blur-3xl"></div>
-          </div>
-          
-          <div className="container mx-auto max-w-4xl relative z-10">
-            <div className="text-center mb-12">
-              <span className="inline-block bg-sce-orange text-sce-navy px-4 py-2 rounded-full text-sm font-semibold mb-4">
-                Construction Management Platform
               </span>
-              <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-                Manage Your Construction Projects with Confidence
-              </h1>
-              <p className="text-lg md:text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-                From intake to completion, track every project, manage subcontractors, and stay within budget. Built for construction professionals.
+              <h2 className="text-3xl sm:text-4xl font-bold text-sce-navy mt-3 mb-4">
+                Everything You Need to Run Your Jobs
+              </h2>
+              <p className="text-sce-gray max-w-2xl mx-auto">
+                Purpose-built tools that handle the real problems general contractors
+                face every day on the job.
               </p>
-              
-              <div className="flex flex-col sm:flex-row justify-center gap-4 md:gap-6">
-                <button
-                  onClick={() => signIn('google')}
-                  className="bg-sce-orange text-white px-8 py-4 rounded-lg font-semibold hover:bg-orange-600 transition-all text-base md:text-lg"
-                >
-                  Sign In with Google
-                </button>
-                <Link
-                  href="/signup"
-                  className="border-2 border-sce-orange text-sce-orange hover:bg-sce-orange hover:text-white px-8 py-4 rounded-lg font-semibold transition-all text-center text-base md:text-lg"
-                >
-                  Create Free Account
-                </Link>
-              </div>
+            </div>
+
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+              <FeatureCard
+                icon={<IconClipboard />}
+                title="Project Tracking"
+                description="Create and manage projects with timelines, milestones, and status updates. See what's on track and what needs attention."
+              />
+              <FeatureCard
+                icon={<IconUsers />}
+                title="Sub Management"
+                description="Manage subcontractor assignments, bids, and payment schedules. Rate performance and build your trusted network."
+              />
+              <FeatureCard
+                icon={<IconCurrency />}
+                title="Budget Control"
+                description="Set budgets, track spending by category, and compare estimated vs. actual costs in real time across every project."
+              />
+              <FeatureCard
+                icon={<IconCamera />}
+                title="Photo Documentation"
+                description="Upload job-site photos tied to specific projects and phases. Build a visual timeline of every project's progress."
+              />
+              <FeatureCard
+                icon={<IconChart />}
+                title="Reports & Analytics"
+                description="Generate professional PDF reports, track KPIs, and get a bird's-eye view of your entire operation."
+              />
+              <FeatureCard
+                icon={<IconDocument />}
+                title="Document Management"
+                description="Store contracts, permits, change orders, and lien waivers all in one place — searchable and organized by project."
+              />
             </div>
           </div>
         </section>
 
-        {/* Features Grid */}
-        <section className="py-16 md:py-24 px-4 md:px-6 bg-gray-50">
-          <div className="container mx-auto max-w-6xl">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Powerful Features Built for You</h2>
-              <p className="text-gray-600 text-lg max-w-2xl mx-auto">Everything you need to manage construction projects efficiently</p>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {/* Feature 1 */}
-              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
-                <div className="h-12 w-12 bg-sce-orange rounded-lg flex items-center justify-center mb-6">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">Project Analytics</h3>
-                <p className="text-gray-600">Get detailed insights into project progress, timelines, and performance metrics in real-time</p>
-              </div>
-
-              {/* Feature 2 */}
-              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
-                <div className="h-12 w-12 bg-sce-orange rounded-lg flex items-center justify-center mb-6">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.856-1.487M15 10a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">Subcontractor Management</h3>
-                <p className="text-gray-600">Organize, schedule, and communicate with all your subcontractors in one centralized platform</p>
-              </div>
-
-              {/* Feature 3 */}
-              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
-                <div className="h-12 w-12 bg-sce-orange rounded-lg flex items-center justify-center mb-6">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">Budget Tracking</h3>
-                <p className="text-gray-600">Monitor spending, track invoices, and manage payments with complete financial visibility</p>
-              </div>
-
-              {/* Feature 4 */}
-              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
-                <div className="h-12 w-12 bg-sce-orange rounded-lg flex items-center justify-center mb-6">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">Real-Time Updates</h3>
-                <p className="text-gray-600">Stay informed with instant notifications on project changes, schedules, and important milestones</p>
-              </div>
-
-              {/* Feature 5 */}
-              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
-                <div className="h-12 w-12 bg-sce-orange rounded-lg flex items-center justify-center mb-6">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">Customizable Workflows</h3>
-                <p className="text-gray-600">Tailor the platform to match your specific processes and business requirements</p>
-              </div>
-
-              {/* Feature 6 */}
-              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
-                <div className="h-12 w-12 bg-sce-orange rounded-lg flex items-center justify-center mb-6">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">Secure & Reliable</h3>
-                <p className="text-gray-600">Enterprise-grade security to protect your data and keep your projects running smoothly</p>
-              </div>
-            </div>
+        {/* ── Final CTA ── */}
+        <section className="py-20 md:py-28 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-sce-navy to-[#1a3068] relative overflow-hidden">
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-sce-orange/5 rounded-full blur-3xl" />
           </div>
-        </section>
-
-        {/* How It Works */}
-        <section className="py-16 md:py-24 px-4 md:px-6">
-          <div className="container mx-auto max-w-5xl">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">How It Works</h2>
-              <p className="text-gray-600 text-lg">Get started in minutes with our simple onboarding process</p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="relative">
-                <div className="absolute -left-4 md:left-1/2 top-0 md:top-8 w-8 h-8 md:w-12 md:h-12 bg-sce-orange rounded-full flex items-center justify-center text-white font-bold text-sm md:text-base">1</div>
-                <div className="md:ml-12 pt-12 md:pt-0">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Create Account</h3>
-                  <p className="text-gray-600">Sign up in seconds with your Google account or email</p>
-                </div>
-              </div>
-
-              <div className="relative">
-                <div className="absolute -left-4 md:left-1/2 top-0 md:top-8 w-8 h-8 md:w-12 md:h-12 bg-sce-orange rounded-full flex items-center justify-center text-white font-bold text-sm md:text-base">2</div>
-                <div className="md:ml-12 pt-12 md:pt-0">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Add Your Projects</h3>
-                  <p className="text-gray-600">Input your project details and set up your team</p>
-                </div>
-              </div>
-
-              <div className="relative">
-                <div className="absolute -left-4 md:left-1/2 top-0 md:top-8 w-8 h-8 md:w-12 md:h-12 bg-sce-orange rounded-full flex items-center justify-center text-white font-bold text-sm md:text-base">3</div>
-                <div className="md:ml-12 pt-12 md:pt-0">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Start Managing</h3>
-                  <p className="text-gray-600">Track progress and manage your projects efficiently</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Stats Section */}
-        <section className="bg-sce-navy text-white py-16 md:py-20 px-4 md:px-6">
-          <div className="container mx-auto max-w-4xl">
-            <div className="grid md:grid-cols-3 gap-8 text-center">
-              <div>
-                <div className="text-4xl md:text-5xl font-bold text-sce-orange mb-2">8+</div>
-                <p className="text-lg text-blue-100">Active Construction Projects</p>
-              </div>
-              <div>
-                <div className="text-4xl md:text-5xl font-bold text-sce-orange mb-2">50+</div>
-                <p className="text-lg text-blue-100">Professional Team Members</p>
-              </div>
-              <div>
-                <div className="text-4xl md:text-5xl font-bold text-sce-orange mb-2">100%</div>
-                <p className="text-lg text-blue-100">Customer Satisfaction Rate</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* CTA Section */}
-        <section className="py-16 md:py-24 px-4 md:px-6 bg-gray-50">
-          <div className="container mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Ready to Streamline Your Projects?</h2>
-            <p className="text-lg text-gray-600 mb-8">Join construction professionals who are already using our platform</p>
-            
-            <div className="flex flex-col sm:flex-row justify-center gap-4 md:gap-6">
-              <button
-                onClick={() => signIn('google')}
-                className="bg-sce-orange text-white px-8 py-4 rounded-lg font-semibold hover:bg-orange-600 transition-all text-base md:text-lg"
-              >
+          <div className="max-w-3xl mx-auto text-center relative z-10">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight">
+              Ready to Take Control of Your Projects?
+            </h2>
+            <p className="text-white/70 text-lg mb-10 max-w-xl mx-auto">
+              Join general contractors who are ditching spreadsheets and running
+              their businesses from one powerful dashboard.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button href="/signup" variant="primary" size="lg">
                 Get Started Free
-              </button>
-              <Link
-                href="/features"
-                className="border-2 border-sce-orange text-sce-orange hover:bg-sce-orange hover:text-white px-8 py-4 rounded-lg font-semibold transition-all text-center text-base md:text-lg"
-              >
-                Learn More
-              </Link>
+              </Button>
+              <Button href="/login" variant="outline" size="lg">
+                Log In →
+              </Button>
             </div>
           </div>
         </section>
 
-        {/* Footer */}
-        <footer className="bg-sce-navy text-white py-8 px-4 md:px-6">
-          <div className="container mx-auto">
-            <div className="grid md:grid-cols-3 gap-8 mb-8 pb-8 border-b border-blue-700">
-              <div>
-                <h4 className="text-lg font-bold mb-4">Product</h4>
-                <ul className="space-y-2">
-                  <li><Link href="/features" className="text-blue-100 hover:text-sce-orange transition-colors">Features</Link></li>
-                  <li><Link href="/login" className="text-blue-100 hover:text-sce-orange transition-colors">Login</Link></li>
-                  <li><Link href="/signup" className="text-blue-100 hover:text-sce-orange transition-colors">Sign Up</Link></li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="text-lg font-bold mb-4">Company</h4>
-                <ul className="space-y-2">
-                  <li><a href="#" className="text-blue-100 hover:text-sce-orange transition-colors">About Us</a></li>
-                  <li><a href="#" className="text-blue-100 hover:text-sce-orange transition-colors">Contact</a></li>
-                  <li><a href="#" className="text-blue-100 hover:text-sce-orange transition-colors">Blog</a></li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="text-lg font-bold mb-4">Legal</h4>
-                <ul className="space-y-2">
-                  <li><a href="#" className="text-blue-100 hover:text-sce-orange transition-colors">Privacy Policy</a></li>
-                  <li><a href="#" className="text-blue-100 hover:text-sce-orange transition-colors">Terms of Service</a></li>
-                  <li><a href="#" className="text-blue-100 hover:text-sce-orange transition-colors">Support</a></li>
-                </ul>
-              </div>
-            </div>
-            <div className="text-center text-blue-100">
-              <p>&copy; 2026 Southern Cities Construction. All rights reserved.</p>
-            </div>
-          </div>
-        </footer>
+        <Footer />
       </div>
     </>
   );
