@@ -9,19 +9,13 @@ export default function Navbar() {
     <header className="bg-sce-navy sticky top-0 z-50 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
-          {/* Logo */}
-          <Link href="/" className="flex-shrink-0 flex items-center gap-3">
-            {/* SC Construction icon mark */}
-            <div className="flex items-center justify-center w-10 h-10 bg-sce-orange rounded">
-              <svg viewBox="0 0 40 40" className="w-7 h-7" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <polygon points="20,4 34,12 34,28 20,36 6,28 6,12" fill="none" stroke="white" strokeWidth="2"/>
-                <text x="20" y="25" textAnchor="middle" fill="white" fontSize="14" fontWeight="bold" fontFamily="serif">SC</text>
-              </svg>
-            </div>
-            <div className="hidden sm:block">
-              <div className="text-white font-bold text-sm leading-tight">SOUTHERN CITIES</div>
-              <div className="text-sce-orange font-semibold text-xs tracking-widest">CONSTRUCTION</div>
-            </div>
+          {/* Logo - Variant 02 (full dark, white text for navy background) */}
+          <Link href="/" className="flex-shrink-0">
+            <img
+              src="/logos/sc-logo-02.png"
+              alt="Southern Cities Construction"
+              className="h-10 md:h-12 w-auto"
+            />
           </Link>
 
           {/* Desktop nav */}
