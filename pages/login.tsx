@@ -180,7 +180,7 @@ export default function LoginPage() {
             <div className="text-center mb-8 flex flex-col items-center justify-center">
               <div className="mb-4 w-full flex justify-center items-center">
                 <img 
-                  src="/logos/sc-logo-02.png" 
+                  src="/logos/sc-logo-01.png" 
                   alt="Southern Cities Construction" 
                   className="h-20 md:h-24 w-auto mx-auto"
                 />
