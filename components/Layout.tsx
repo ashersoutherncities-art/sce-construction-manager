@@ -13,12 +13,12 @@ export default function Layout({ children, title }: LayoutProps) {
   const { data: session } = useSession();
 
   const navLinks = [
-    { href: '/', label: 'Home' },
-    { href: '/intake', label: 'New Project' },
     { href: '/dashboard', label: 'Dashboard' },
-    { href: '/analyze', label: 'Photo Analysis' },
+    { href: '/intake', label: 'New Project' },
+    { href: '/budget', label: 'Budget' },
+    { href: '/subcontractors', label: 'Subcontractors' },
+    { href: '/analytics', label: 'Analytics' },
     { href: '/vendors', label: 'Vendors' },
-    { href: '/admin/scraper-dashboard', label: 'FB Scraper' },
   ];
 
   return (
