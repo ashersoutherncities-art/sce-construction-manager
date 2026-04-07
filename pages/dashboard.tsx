@@ -5,37 +5,23 @@ import Layout from '@/components/Layout';
 import Link from 'next/link';
 import StatusBadge, { PROJECT_STATUSES, STATUS_CONFIG, normalizeStatus } from '@/components/StatusBadge';
 
-interface Budget {
-  id: string;
-  totalBudget: number;
-  amountSpent: number;
-  category: string;
-}
-
-interface Invoice {
-  id: string;
-  amount: number;
-  status: string;
-}
-
 interface Project {
   id: string;
-  name: string;
-  address: string;
-  city: string;
-  state: string;
-  status: string;
+  timestamp?: string;
+  createdAt?: string;
   clientName: string;
-  clientEmail: string;
-  costEstimate: number | null;
-  progress: number;
-  startDate: string | null;
-  endDate: string | null;
-  createdAt: string;
-  budgets: Budget[];
-  invoices: Invoice[];
-  subcontractorAssignments: any[];
+  propertyAddress?: string;
+  address?: string;
+  name?: string;
+  status: string;
+  budgetMax?: number;
+  costEstimate?: number;
+  progress?: number;
 }
+
+export const getServerSideProps = async () => {
+  return { props: {} };
+};
 
 export default function DashboardPage() {
   const { data: session, status: authStatus } = useSession({ required: true });
@@ -44,43 +30,58 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [budgetSummary, setBudgetSummary] = useState({ totalBudget: 0, totalSpent: 0, count: 0 });
+  const [subSummary, setSubSummary] = useState({ totalSubs: 0, assignments: 0, inProgress: 0, completed: 0 });
 
   useEffect(() => {
-    if (authStatus === 'unauthenticated') {
-      router.push('/login');
-    }
+    if (authStatus === 'unauthenticated') router.push('/login');
   }, [authStatus, router]);
 
   useEffect(() => {
-    if (session) fetchProjects();
+    if (session) fetchAllData();
   }, [session]);
 
-  const fetchProjects = async () => {
+  const fetchAllData = async () => {
     try {
-      const response = await fetch('/api/projects/list');
-      const data = await response.json();
-      if (data.success) {
-        setProjects(data.projects);
+      const [projRes, budgetRes, subRes, assignRes] = await Promise.all([
+        fetch('/api/projects/list'),
+        fetch('/api/budgets').catch(() => null),
+        fetch('/api/subcontractors').catch(() => null),
+        fetch('/api/subcontractors/assignments').catch(() => null),
+      ]);
+
+      const projData = await projRes.json();
+      if (projData.success) setProjects(projData.projects);
+
+      if (budgetRes) {
+        const bd = await budgetRes.json();
+        if (bd.success && bd.budgets) {
+          setBudgetSummary({
+            totalBudget: bd.budgets.reduce((s: number, b: any) => s + b.totalBudget, 0),
+            totalSpent: bd.budgets.reduce((s: number, b: any) => s + b.amountSpent, 0),
+            count: bd.budgets.length,
+          });
+        }
+      }
+
+      if (subRes && assignRes) {
+        const sd = await subRes.json();
+        const ad = await assignRes.json();
+        if (sd.success && ad.success) {
+          const assigns = ad.assignments || [];
+          setSubSummary({
+            totalSubs: (sd.subcontractors || []).length,
+            assignments: assigns.length,
+            inProgress: assigns.filter((a: any) => a.status === 'in_progress').length,
+            completed: assigns.filter((a: any) => a.status === 'completed').length,
+          });
+        }
       }
     } catch (error) {
-      console.error('Error fetching projects:', error);
+      console.error('Error fetching dashboard data:', error);
     } finally {
       setLoading(false);
     }
-  };
-
-  const getProjectBudget = (project: Project) => {
-    if (project.budgets && project.budgets.length > 0) {
-      return project.budgets.reduce((sum, b) => sum + b.totalBudget, 0);
-    }
-    return project.costEstimate || 0;
-  };
-
-  const getProjectSpent = (project: Project) => {
-    if (project.budgets && project.budgets.length > 0) {
-      return project.budgets.reduce((sum, b) => sum + b.amountSpent, 0);
-    }
-    return 0;
   };
 
   const filteredProjects = projects.filter((p) => {
@@ -89,13 +90,13 @@ export default function DashboardPage() {
     const searchMatch =
       !query ||
       p.clientName?.toLowerCase().includes(query) ||
-      p.address?.toLowerCase().includes(query) ||
+      (p.propertyAddress || p.address || '')?.toLowerCase().includes(query) ||
       p.name?.toLowerCase().includes(query) ||
       p.id?.toLowerCase().includes(query);
     return statusMatch && searchMatch;
   });
 
-  const stats = {
+  const stats: Record<string, number> = {
     total: projects.length,
     intake: projects.filter((p) => normalizeStatus(p.status) === 'intake').length,
     analyzing: projects.filter((p) => normalizeStatus(p.status) === 'analyzing').length,
@@ -104,9 +105,8 @@ export default function DashboardPage() {
     closed: projects.filter((p) => normalizeStatus(p.status) === 'closed').length,
   };
 
-  const totalBudget = projects.reduce((sum, p) => sum + getProjectBudget(p), 0);
-  const totalSpent = projects.reduce((sum, p) => sum + getProjectSpent(p), 0);
-  const totalSubs = projects.reduce((sum, p) => sum + (p.subcontractorAssignments?.length || 0), 0);
+  const budgetPct = budgetSummary.totalBudget > 0
+    ? Math.round((budgetSummary.totalSpent / budgetSummary.totalBudget) * 100) : 0;
 
   if (authStatus === 'loading' || authStatus === 'unauthenticated') {
     return (
@@ -133,23 +133,55 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Quick Stats Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <Link href="/budget" className="bg-white rounded-lg shadow-lg p-5 hover:ring-2 hover:ring-sce-orange transition-all">
-          <div className="text-2xl font-bold text-green-600">${totalBudget.toLocaleString()}</div>
-          <div className="text-sce-gray text-sm">Total Budget</div>
+      {/* 4 Feature Summary Cards */}
+      <div className="grid md:grid-cols-4 gap-4 mb-8">
+        <Link href="/dashboard" className="bg-white rounded-lg shadow-lg p-5 hover:shadow-xl transition-shadow border-t-4 border-sce-navy">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 rounded-lg bg-sce-navy flex items-center justify-center text-white font-bold">P</div>
+            <div>
+              <div className="text-sm text-sce-gray">Project Tracking</div>
+              <div className="text-2xl font-bold text-sce-navy">{stats.total}</div>
+            </div>
+          </div>
+          <div className="text-xs text-sce-gray">{stats.accepted} accepted, {stats.intake} intake</div>
         </Link>
-        <Link href="/budget" className="bg-white rounded-lg shadow-lg p-5 hover:ring-2 hover:ring-sce-orange transition-all">
-          <div className="text-2xl font-bold text-red-600">${totalSpent.toLocaleString()}</div>
-          <div className="text-sce-gray text-sm">Total Spent</div>
+
+        <Link href="/budget" className="bg-white rounded-lg shadow-lg p-5 hover:shadow-xl transition-shadow border-t-4 border-green-500">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center text-white font-bold">$</div>
+            <div>
+              <div className="text-sm text-sce-gray">Budget</div>
+              <div className="text-2xl font-bold text-green-600">${budgetSummary.totalBudget.toLocaleString()}</div>
+            </div>
+          </div>
+          <div className="text-xs text-sce-gray">{budgetPct}% utilized ({budgetSummary.count} budgets)</div>
+          {budgetSummary.totalBudget > 0 && (
+            <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+              <div className={`h-2 rounded-full ${budgetPct > 90 ? 'bg-red-500' : budgetPct > 70 ? 'bg-yellow-500' : 'bg-green-500'}`} style={{ width: `${Math.min(budgetPct, 100)}%` }} />
+            </div>
+          )}
         </Link>
-        <Link href="/subcontractors" className="bg-white rounded-lg shadow-lg p-5 hover:ring-2 hover:ring-sce-orange transition-all">
-          <div className="text-2xl font-bold text-blue-600">{totalSubs}</div>
-          <div className="text-sce-gray text-sm">Active Assignments</div>
+
+        <Link href="/subcontractors" className="bg-white rounded-lg shadow-lg p-5 hover:shadow-xl transition-shadow border-t-4 border-sce-orange">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 rounded-lg bg-sce-orange flex items-center justify-center text-white font-bold">S</div>
+            <div>
+              <div className="text-sm text-sce-gray">Subcontractors</div>
+              <div className="text-2xl font-bold text-sce-orange">{subSummary.totalSubs}</div>
+            </div>
+          </div>
+          <div className="text-xs text-sce-gray">{subSummary.inProgress} in progress, {subSummary.completed} completed</div>
         </Link>
-        <Link href="/analytics" className="bg-white rounded-lg shadow-lg p-5 hover:ring-2 hover:ring-sce-orange transition-all">
-          <div className="text-2xl font-bold text-purple-600">{stats.total}</div>
-          <div className="text-sce-gray text-sm">View Analytics</div>
+
+        <Link href="/analytics" className="bg-white rounded-lg shadow-lg p-5 hover:shadow-xl transition-shadow border-t-4 border-purple-500">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 rounded-lg bg-purple-500 flex items-center justify-center text-white font-bold">A</div>
+            <div>
+              <div className="text-sm text-sce-gray">Analytics</div>
+              <div className="text-2xl font-bold text-purple-600">View</div>
+            </div>
+          </div>
+          <div className="text-xs text-sce-gray">Reports & insights</div>
         </Link>
       </div>
 
@@ -169,7 +201,7 @@ export default function DashboardPage() {
             >
               <div className="flex items-center gap-2">
                 <span className="text-xl">{config.icon}</span>
-                <div className={`text-2xl font-bold ${config.color}`}>{stats[status as keyof typeof stats]}</div>
+                <div className={`text-2xl font-bold ${config.color}`}>{stats[status]}</div>
               </div>
               <div className="text-sce-gray text-sm">{config.label}</div>
             </div>
@@ -182,7 +214,7 @@ export default function DashboardPage() {
         <div className="mb-4">
           <input
             type="text"
-            placeholder="Search projects by name, client, address, or ID..."
+            placeholder="Search projects by name, address, or ID..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sce-orange focus:border-transparent"
@@ -191,9 +223,7 @@ export default function DashboardPage() {
         <div className="flex gap-3 flex-wrap">
           <button
             onClick={() => setFilter('all')}
-            className={`px-4 py-2 rounded-full font-semibold transition-all ${
-              filter === 'all' ? 'bg-sce-navy text-white' : 'bg-gray-100 text-sce-gray hover:bg-gray-200'
-            }`}
+            className={`px-4 py-2 rounded-full font-semibold transition-all ${filter === 'all' ? 'bg-sce-navy text-white' : 'bg-gray-100 text-sce-gray hover:bg-gray-200'}`}
           >
             All ({stats.total})
           </button>
@@ -203,19 +233,17 @@ export default function DashboardPage() {
               <button
                 key={status}
                 onClick={() => setFilter(status)}
-                className={`px-4 py-2 rounded-full font-semibold transition-all flex items-center gap-1.5 ${
-                  filter === status ? 'bg-sce-orange text-white' : 'bg-gray-100 text-sce-gray hover:bg-gray-200'
-                }`}
+                className={`px-4 py-2 rounded-full font-semibold transition-all flex items-center gap-1.5 ${filter === status ? 'bg-sce-orange text-white' : 'bg-gray-100 text-sce-gray hover:bg-gray-200'}`}
               >
                 <span>{config.icon}</span>
-                {config.label} ({stats[status as keyof typeof stats]})
+                {config.label} ({stats[status]})
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* Projects Table */}
+      {/* Projects List */}
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -223,73 +251,35 @@ export default function DashboardPage() {
               <tr>
                 <th className="px-6 py-4 text-left">Project</th>
                 <th className="px-6 py-4 text-left">Client</th>
-                <th className="px-6 py-4 text-left">Location</th>
+                <th className="px-6 py-4 text-left">Property</th>
                 <th className="px-6 py-4 text-left">Status</th>
                 <th className="px-6 py-4 text-left">Budget</th>
-                <th className="px-6 py-4 text-left">Progress</th>
                 <th className="px-6 py-4 text-left">Date</th>
                 <th className="px-6 py-4 text-left">Actions</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr>
-                  <td colSpan={8} className="px-6 py-8 text-center text-sce-gray">
-                    Loading projects...
-                  </td>
-                </tr>
+                <tr><td colSpan={7} className="px-6 py-8 text-center text-sce-gray">Loading projects...</td></tr>
               ) : filteredProjects.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="px-6 py-8 text-center text-sce-gray">
-                    {searchQuery ? 'No projects match your search' : 'No projects yet. Create one from New Project.'}
-                  </td>
-                </tr>
+                <tr><td colSpan={7} className="px-6 py-8 text-center text-sce-gray">{searchQuery ? 'No projects match your search' : 'No projects found'}</td></tr>
               ) : (
-                filteredProjects.map((project) => {
-                  const budget = getProjectBudget(project);
-                  const spent = getProjectSpent(project);
-                  return (
-                    <tr key={project.id} className="border-b hover:bg-gray-50">
-                      <td className="px-6 py-4">
-                        <div className="font-semibold">{project.name}</div>
-                        <div className="text-xs text-gray-400 font-mono">{project.id.slice(0, 8)}</div>
-                      </td>
-                      <td className="px-6 py-4">{project.clientName || '-'}</td>
-                      <td className="px-6 py-4 text-sm">
-                        {[project.address, project.city, project.state].filter(Boolean).join(', ') || '-'}
-                      </td>
-                      <td className="px-6 py-4">
-                        <StatusBadge status={project.status} />
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm font-semibold">${budget.toLocaleString()}</div>
-                        {spent > 0 && (
-                          <div className="text-xs text-red-500">Spent: ${spent.toLocaleString()}</div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div
-                            className="bg-sce-orange h-2 rounded-full"
-                            style={{ width: `${project.progress}%` }}
-                          />
-                        </div>
-                        <div className="text-xs text-gray-500 mt-1">{project.progress}%</div>
-                      </td>
-                      <td className="px-6 py-4 text-sm">
-                        {new Date(project.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4">
-                        <Link
-                          href={`/project/${project.id}`}
-                          className="text-sce-orange hover:underline font-semibold"
-                        >
-                          View
-                        </Link>
-                      </td>
-                    </tr>
-                  );
-                })
+                filteredProjects.map((project) => (
+                  <tr key={project.id} className="border-b hover:bg-gray-50">
+                    <td className="px-6 py-4">
+                      <div className="font-semibold">{project.name || project.clientName}</div>
+                      <div className="text-xs text-gray-400 font-mono">{project.id.length > 12 ? project.id.slice(0, 8) : project.id}</div>
+                    </td>
+                    <td className="px-6 py-4">{project.clientName || '-'}</td>
+                    <td className="px-6 py-4 text-sm">{project.propertyAddress || project.address || '-'}</td>
+                    <td className="px-6 py-4"><StatusBadge status={project.status} /></td>
+                    <td className="px-6 py-4">${(project.budgetMax || project.costEstimate || 0).toLocaleString()}</td>
+                    <td className="px-6 py-4 text-sm">{new Date(project.timestamp || project.createdAt || '').toLocaleDateString()}</td>
+                    <td className="px-6 py-4">
+                      <Link href={`/project/${project.id}`} className="text-sce-orange hover:underline font-semibold">View</Link>
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
