@@ -103,19 +103,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       await updateProjectFolder(projectId, folderId);
     }
 
-    // Upload photos if any (skip if using mock storage)
-    const photoIds: string[] = [];
+    let photoIds: string[] = [];
     if (!useMock) {
-      const photoFiles = Object.values(files).flat();
-      for (const file of photoFiles) {
-        if (file && 'filepath' in file) {
+      const photoFiles = Object.values(files)
+        .flat()
+        .filter((file): file is formidable.File => !!file && 'filepath' in file);
+
+      photoIds = await Promise.all(
+        photoFiles.map((file) => {
           const fileBuffer = fs.readFileSync(file.filepath);
-          const photoId = await uploadPhotoToFolder(folderId, file.originalFilename || 'photo.jpg', fileBuffer, 'before');
-          photoIds.push(photoId);
-        }
-      }
-      
-      // Update project with photo IDs
+          return uploadPhotoToFolder(
+            folderId,
+            file.originalFilename || 'photo.jpg',
+            fileBuffer,
+            'before'
+          );
+        })
+      );
+
       const { updateProjectPhotos } = await import('@/lib/googleSheets');
       await updateProjectPhotos(projectId, photoIds);
     }

@@ -47,22 +47,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Get existing photos
     const existingPhotoIds = await getProjectPhotos(projectId);
 
-    // Upload new photos
-    const newPhotoIds: string[] = [];
-    const photoFiles = Object.values(files).flat();
-    
-    for (const file of photoFiles) {
-      if (file && 'filepath' in file) {
+    const photoFiles = Object.values(files)
+      .flat()
+      .filter((file): file is formidable.File => !!file && 'filepath' in file);
+
+    const newPhotoIds = await Promise.all(
+      photoFiles.map((file) => {
         const fileBuffer = fs.readFileSync(file.filepath);
-        const photoId = await uploadPhotoToFolder(
+        return uploadPhotoToFolder(
           folderId,
           file.originalFilename || 'photo.jpg',
           fileBuffer,
           'additional'
         );
-        newPhotoIds.push(photoId);
-      }
-    }
+      })
+    );
 
     // Combine existing and new photo IDs
     const allPhotoIds = [...existingPhotoIds, ...newPhotoIds];
